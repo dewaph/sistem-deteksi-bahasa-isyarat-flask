@@ -1,0 +1,199 @@
+{% extends 'layouts/base.html' %} {% block title %} Tables {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<style>
+  .centered-card {
+    margin: 0 auto;
+    max-width: 1120px; /* Adjust the width as needed */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Box shadow for the card */
+  }
+
+  .card-content {
+    flex: 1;
+    padding: 20px; /* Padding inside the card content */
+  }
+
+  .card-header {
+    padding: 20px;
+    border-radius: 10px 10px 0 0;
+  }
+
+  .card-header h2 {
+    margin: 0; /* Remove margin from the header title */
+  }
+
+#butt {
+  background-color: #efefef;
+  padding: 16px;
+  border-radius: 20px;
+}
+
+body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    .full-page-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh; /* Set height to viewport height */
+      background-image: url('{{ config.ASSETS_ROOT }}/img/bg.jpg');
+      background-size: cover;
+      background-position: center;
+      z-index: -1; /* Place it behind other content */
+    }
+
+</style>
+{% endblock stylesheets %} {% block content %}
+<div
+  class="full-page-background"
+>
+  <span class="mask bg-primary opacity-6"></span>
+</div>
+{% include "admin/includes/navigation-auth.html" %}
+
+<main class="main-content position-relative border-radius-lg">
+  <div class="container-fluid py-7">
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4 centered-card">
+          <div class="card-header pb-0 justify-content-center align-items-center">
+            <h1>Rekam Data Gambar Otomatis</h1>
+            
+          </div>
+          
+    <form action="{{ url_for('admin_blueprint.start_recording') }}" method="post">
+      <div class="card-header pb-0 pt-3">
+      <label for="dataset_size">Jumlah Data:</label>
+      <input class="form-control" type="text" id="dataset_size" name="dataset_size" required>
+      <label for="table_choice">Pilihan Tabel:</label>
+        <select class="form-control" id="table_choice" name="table_choice" required>
+            <option value="1">Tabel data 1 tangan</option>
+            <option value="2">Tabel data 2 tangan</option>
+        </select>  
+      <label for="hand_gesture">Input Huruf:</label>
+        <input class="form-control" type="text" id="hand_gesture" name="hand_gesture" required>
+        <br>
+        <button id="submit" type="submit" class="btn btn-primary w-20"><i class="fas fa-camera me-2"></i>Buka Kamera</button>
+      </div>
+    </form>
+
+    {% if error_message %}
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: '{{ error_message }}'
+      });
+      });
+    </script>
+    {% endif %}
+    
+    {% if label_dict%}
+    <div class="card-header pb-0 pt-3">
+        <h2 id="tulisan" style="display: block;">Label Dictionary:</h2>
+        <ul id="tulisan1" style="display: block;">
+            {% for key, value in label_dict.items() %}
+                <li>{{ key }}: {{ value }}</li>
+            {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    {% if table_choice and hand_gesture %}
+    <div class="card-header pb-0 pt-3">
+        <h2 id="tulisan2" style="display: block;">Collecting dataset kelas {{ hand_gesture }}</h2>
+        <h4 id="tulisan3" style="display: block;">Tekan Keyboard "Q" untuk mulai merekam dan keyboard "X" untuk menutup kamera</h4>
+        <img id="capture" src="{{ url_for('admin_blueprint.kamera', table_choice=table_choice, hand_gesture=hand_gesture) }}" width="640" height="480" style="display: block;">
+      </div>
+        <script>
+          document.addEventListener("keydown", function(event) {
+            if (event.key === "q") {
+              // Get a reference to the image element
+              var imgElement = document.getElementById("capture");
+              
+              // Modify the src attribute
+              imgElement.src = "{{ url_for('admin_blueprint.feed', table_choice=table_choice, hand_gesture=hand_gesture , dataset_size=dataset_size) }}";
+            }
+          });
+          document.addEventListener("keydown", function(event) {
+            if (event.key === "x") {
+              // Get a reference to the image element
+              var imgElement = document.getElementById("capture");
+              var tulisan = document.getElementById("tulisan");
+              var tulisan1 = document.getElementById("tulisan1");
+              var tulisan2 = document.getElementById("tulisan2");
+              var tulisan3 = document.getElementById("tulisan3");
+              
+              // Modify the src attribute
+              imgElement.src = "{{ url_for('admin_blueprint.x') }}";
+              imgElement.style.display = "none";
+              tulisan.style.display = "none";
+              tulisan1.style.display = "none";
+              tulisan2.style.display = "none";
+              tulisan3.style.display = "none";
+            }
+          });
+            
+          </script>
+    {% endif %}
+    <div class="card-header pb-0 pt-3">
+    <a class="btn btn-primary btn-danger w-20" href="{{ url_for('admin_blueprint.admin') }}">
+      <i class="fas fa-times me-2"></i> Kembali
+    </a>
+  </div>
+    </div>
+    
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("submit").addEventListener("click", function(event) {
+
+      var handGestureInput = document.getElementById("hand_gesture").value.trim();
+      var datasetInput = document.getElementById("dataset_size").value.trim();
+      var alphabetRegex = /^[A-Za-z]+$/;
+      var datasetRegex = /^\d+$/;
+
+      if (!datasetInput | !handGestureInput) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'isi input terlebih dahulu'
+        });
+      } else if (!datasetRegex.test(datasetInput)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'input harus angka.'
+        });
+      } else if (!alphabetRegex.test(handGestureInput)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'input harus berupa huruf'
+        });
+      }
+    });
+  });
+</script>
+
+{% endblock javascripts %}

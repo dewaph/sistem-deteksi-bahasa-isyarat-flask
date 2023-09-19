@@ -1,0 +1,470 @@
+{% extends '/layouts/base.html' %} {% block title %} Dashboard {% endblock title
+%}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<style>
+select, input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button {
+  /* ... */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+
+  /* styles.css */
+.table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+}
+
+.table th {
+    background-color: #6F81E7;
+  color: whitesmoke;
+  text-align: left; /* Poros perataan teks */
+}
+
+.table tr:hover {
+    background-color: #ddd;
+}
+
+</style>
+{% endblock stylesheets %} {% block content %}
+
+<div class="min-height-300 bg-primary position-absolute w-100"></div>
+
+{% include 'admin/includes/sidenav.html' %}
+
+<main class="main-content position-relative border-radius-lg">
+  {% include "/includes/navigation.html" %}
+
+  <div class="container-fluid py-4">
+    <div class="row">
+      <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+          <div class="card-body p-3">
+            <div class="row">
+              <div class="col-8">
+                <div class="numbers">
+                  <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                    Total Data
+                  </p>
+                  <h5 class="font-weight-bolder">{{ total_data_count }}</h5>
+                </div>
+              </div>
+              <div class="col-4 text-end">
+                <div
+                  class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle"
+                >
+                  <i
+                    class="ni ni-money-coins text-lg opacity-10"
+                    aria-hidden="true"
+                  ></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+          <div class="card-body p-3">
+            <div class="row">
+              <div class="col-8">
+                <div class="numbers">
+                  <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                    Data 1 Tangan
+                  </p>
+                  <h5 class="font-weight-bolder">{{ data1tangan_count }}</h5>
+                </div>
+              </div>
+              <div class="col-4 text-end">
+                <div
+                  class="icon icon-shape bg-gradient-danger shadow-danger text-center rounded-circle"
+                >
+                  <i
+                    class="ni ni-book-bookmark text-lg opacity-10"
+                    aria-hidden="true"
+                  ></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+          <div class="card-body p-3">
+            <div class="row">
+              <div class="col-8">
+                <div class="numbers">
+                  <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                    Data 2 Tangan
+                  </p>
+                  <h5 class="font-weight-bolder">{{ data2tangan_count }}</h5>
+                </div>
+              </div>
+              <div class="col-4 text-end">
+                <div
+                  class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle"
+                >
+                  <i
+                    class="ni ni-paper-diploma text-lg opacity-10"
+                    aria-hidden="true"
+                  ></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-sm-6">
+        <div class="card">
+          <div class="card-body p-3">
+            <div class="row">
+              <div class="col-8">
+                <div class="numbers">
+                  <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                    Jumlah Kelas
+                  </p>
+                  <h5 class="font-weight-bolder">{{ total_unique_labels }}</h5>
+                </div>
+              </div>
+              <div class="col-4 text-end">
+                <div
+                  class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle"
+                >
+                  <i
+                    class="ni ni-chart-bar-32 text-lg opacity-10"
+                    aria-hidden="true"
+                  ></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <div class="row mt-4">
+      <div class="col-lg-12">
+        <a class="btn btn-primary btn-success w-15" href="{{ url_for('admin_blueprint.tambah_data') }}">
+          <i class="fas fa-plus"></i> Tambah Data
+        </a>
+      </div>
+      <div class="col-lg-6 mb-lg-0 mb-4">
+        <div class="card z-index-2 h-100">
+          <div class="card-header pb-0 pt-3 bg-transparent">
+            <h6 class="text-capitalize">Tabel Data 1 Tangan</h6>
+          </div>
+          <div class="card-body p-3">
+            {{ data1_df.to_html(classes="table", index=false)|safe }}
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card z-index-2 h-100">
+          <div class="card-header pb-0 pt-3 bg-transparent">
+            <h6 class="text-capitalize">Tabel Data 2 Tangan</h6>
+          </div>
+          <div class="card-body p-3">
+            {{ data2_df.to_html(classes="table", index=false)|safe }}
+          </div>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-lg-15 mb-lg-0 mb-4">
+        <div class="card z-index-2 h-100">
+          <div class="card-header pb-0 pt-3">
+            <div class="d-flex justify-content-between">
+              <h6 class="mb-2">Edit dan Delete Data</h6>
+            </div>
+          </div>
+          <div class="card-header pb-0 pt-3">
+            <label for="table_name">Nama Tabel:</label>
+            <select id="table_name" name="table_name">
+                <option value="data_1_tangan">Data 1 Tangan</option>
+                <option value="data_2_tangan">Data 2 Tangan</option>
+            </select>
+        </div>
+        <div class="card-header pb-0 pt-3">
+            <label for="huruf">Huruf:</label>
+            <select id="huruf" name="huruf">
+                <!-- Opsi-opsi huruf akan diisi melalui JavaScript -->
+            </select>
+        </div>
+        <div class="card-header pb-0 pt-3">
+          <label for="edit_option">Pilihan Edit:</label>
+          <select id="edit_option" name="edit_option">
+              <option value="edit_data">Edit Huruf</option>
+              <option value="edit_label">Edit Label</option>
+              <option value="delete_data">Delete Data</option>
+          </select>
+      </div>
+      <div id="edit-controls" class="card-header pb-0 pt-3">
+        <label for="new_value">Input Baru:</label>
+        <input type="text" id="new_value" name="new_value">
+        <button id="edit_huruf_btn" class="btn btn-warning">
+          <i class="fas fa-pencil-alt"></i>  Edit</button>
+      </div>
+        <div class="card-header pb-0 pt-3">
+            <button id="delete_data_btn" class="btn btn-danger w-15">
+              <i class="fas fa-trash-alt"></i>  Delete</button>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  
+  function loadHurufOptions() {
+        var table_name = document.getElementById("table_name").value;
+        var hurufSelect = document.getElementById("huruf");
+        hurufSelect.innerHTML = ""; // Bersihkan opsi sebelum memuat yang baru
+
+        // Kirim permintaan untuk mendapatkan daftar huruf dari tabel yang sesuai
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "/get_huruf_options?table_name=" + table_name, true);
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var hurufOptions = JSON.parse(xhr.responseText);
+                for (var i = 0; i < hurufOptions.length; i++) {
+                    var option = document.createElement("option");
+                    option.value = hurufOptions[i];
+                    option.text = hurufOptions[i];
+                    hurufSelect.appendChild(option);
+                }
+            }
+        };
+
+        xhr.send();
+    }
+
+    // Call the function immediately after defining it
+    loadHurufOptions();
+  document.getElementById("table_name").addEventListener("change", function() {
+      var table_name = document.getElementById("table_name").value;
+      var hurufSelect = document.getElementById("huruf");
+      hurufSelect.innerHTML = ""; // Bersihkan opsi sebelum memuat yang baru
+
+      // Kirim permintaan untuk mendapatkan daftar huruf dari tabel yang sesuai
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/get_huruf_options?table_name=" + table_name, true);
+
+      xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+              var hurufOptions = JSON.parse(xhr.responseText);
+              for (var i = 0; i < hurufOptions.length; i++) {
+                  var option = document.createElement("option");
+                  option.value = hurufOptions[i];
+                  option.text = hurufOptions[i];
+                  hurufSelect.appendChild(option);
+              }
+          }
+      };
+
+      xhr.send();
+  });
+
+  document.getElementById("edit_huruf_btn").addEventListener("click", function() {
+    var table_name = document.getElementById("table_name").value;
+    var huruf = document.getElementById("huruf").value;
+    var new_value = document.getElementById("new_value").value.toUpperCase();
+    var edit_option = document.getElementById("edit_option").value;
+
+    // Validasi input berdasarkan pilihan edit
+    var isValidInput = true;
+    var validationMessage = "";
+
+    if (new_value.trim() === "") { // Pemeriksaan input kosong
+        isValidInput = false;
+        validationMessage = "Input tidak boleh kosong.";
+    } else if (edit_option === "edit_data") {
+        if (!/^[a-zA-Z]+$/.test(new_value)) {
+            isValidInput = false;
+            validationMessage = "Input hanya boleh berisi huruf alfabet.";
+        }
+    } else if (edit_option === "edit_label") {
+        if (!/^\d+$/.test(new_value)) {
+            isValidInput = false;
+            validationMessage = "Input hanya boleh berisi angka.";
+        }
+    }
+
+    if (!isValidInput) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: validationMessage
+    });
+    return;
+    }
+
+    var data = {
+        table_name: table_name,
+        huruf: huruf,
+        new_value: new_value,
+        edit_option: edit_option
+    };
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/edit_data_or_label", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+                Swal.fire({
+                icon: 'success',
+                text: response.message,
+                buttonsStyling: false,
+                customClass: {
+                confirmButton: 'btn btn-sm btn-primary' // Add the btn-sm class for smaller button
+              }
+              }).then(() => {
+                // Reload the page after clicking "OK" in the SweetAlert
+                location.reload();
+              });
+            } else {
+                var errorResponse = JSON.parse(xhr.responseText);
+                Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorResponse.message
+            });
+            }
+        }
+    };
+
+    xhr.send(JSON.stringify(data));
+});
+
+document.getElementById("delete_data_btn").addEventListener("click", function() {
+            var table_name = document.getElementById("table_name").value;
+            var huruf = document.getElementById("huruf").value;
+
+            if (!table_name || !huruf) {
+              Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Please select both table name and huruf before deleting.'
+          });
+          return;
+            }
+
+            Swal.fire({
+            icon: 'warning',
+            title: 'Konfirmasi',
+            text: 'Apakah kamu yakin ingin menghapus data ini?',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus data',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteData(table_name, huruf);
+            }
+        });
+    });
+
+    function deleteData(table_name, huruf) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/delete_data", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    Swal.fire({
+                    icon: 'success',
+                    text: response.message
+                }).then(() => {
+                    location.reload();
+                });
+                } else {
+                    var errorResponse = JSON.parse(xhr.responseText);
+                    alert("Error: " + errorResponse.message);
+                }
+            }
+        };
+
+        var data = {
+            table_name: table_name,
+            huruf: huruf
+        };
+
+        xhr.send(JSON.stringify(data));
+    };
+
+    function handleEditOptionChange() {
+        var editOption = document.getElementById("edit_option").value;
+        var editControls = document.getElementById("edit-controls");
+        var deleteDataButton = document.getElementById("delete_data_btn");
+
+        if (editOption === "delete_data") {
+            editControls.style.display = "none";
+            deleteDataButton.style.display = "block";
+        } else {
+            editControls.style.display = "block";
+            deleteDataButton.style.display = "none";
+        }
+    }
+
+    // Call the function immediately after defining it
+    handleEditOptionChange();
+
+    document.getElementById("edit_option").addEventListener("change", function() {
+            var editOption = document.getElementById("edit_option").value;
+            var editControls = document.getElementById("edit-controls");
+            var deleteDataButton = document.getElementById("delete_data_btn"); // Get the button element
+
+            if (editOption === "delete_data") {
+                editControls.style.display = "none"; // Hide controls for delete option
+                deleteDataButton.style.display = "block"; // Hide the Delete Data button
+            } else {
+                editControls.style.display = "block"; // Show controls for edit options
+                deleteDataButton.style.display = "none"; // Show the Delete Data button
+            }
+        });
+
+
+</script>
+{% endblock javascripts %}

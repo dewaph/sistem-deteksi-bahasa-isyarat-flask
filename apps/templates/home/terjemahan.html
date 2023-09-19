@@ -1,0 +1,179 @@
+{% extends 'layouts/base.html' %} {% block title %} Terjemahan {% endblock title
+%}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+
+<style>
+  .audio-player-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px; /* Sesuaikan dengan jarak yang diinginkan */
+  }
+</style>
+{% endblock stylesheets %} {% block content %}
+
+<div
+  class="position-absolute w-100 min-height-300 top-0"
+  style="background-image: url('{{ config.ASSETS_ROOT }}/img/profile-layout-header.jpg'); background-position-y: 50%;"
+>
+  <span class="mask bg-primary opacity-6"></span>
+</div>
+
+{% include "includes/sidenav.html" %}
+
+<main class="main-content position-relative border-radius-lg">
+  {% include "includes/navigation.html" %}
+  <div class="container-fluid py-4 align-items-center flex-column">
+    <!-- Apply d-flex, justify-content-center, align-items-center, and flex-column classes -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4 text-center">
+          <h1>Penerjemah Bahasa Isyarat Tangan BISINDO</h1>
+          <div class="mt-3 form-check form-switch">
+            <input
+              class="form-check-input ms-2"
+              type="checkbox"
+              id="mt_toggle"
+            />
+            <label class="form-check-label" for="mt_toggle">Mulai kamera</label>
+          </div>
+          <div
+            id="videoContainer"
+            class="d-flex justify-content-center align-items-center"
+          >
+            <img id="videoStream" src="" width="60%" style="display: none" />
+          </div>
+
+          <div
+            id="message"
+            role="alert"
+            style="display: none"
+            class="alert alert-success"
+          >
+            Menambahkan Spasi!
+          </div>
+
+          <div class="transcript">
+            <p>Terjemahan:</p>
+            <div id="transcript_div"></div>
+            <button id="add_space_btn" class="btn btn-secondary">
+              Tambah Spasi
+            </button>
+          </div>
+          <div class="convert">
+            <button
+              id="convert_btn"
+              class="btn btn-primary btn-lg rounded-pill"
+            >
+              Konversi ke Suara
+            </button>
+          </div>
+          <div class="audio-player-container">
+            <audio id="audio_player" controls style="display: none"></audio>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+<script>
+  function updateTranscript(newContent) {
+    const transcriptDiv = document.getElementById("transcript_div");
+    transcriptDiv.textContent = newContent;
+  }
+
+  const eventSource = new EventSource("/transcript_updates");
+
+  eventSource.onmessage = (event) => {
+    const newTranscript = event.data;
+    updateTranscript(newTranscript);
+  };
+
+  var videoElement = document.getElementById("videoStream");
+  var toggleSwitch = document.getElementById("mt_toggle");
+  var labelElement = document.querySelector(
+    ".form-check-label[for='mt_toggle']"
+  );
+
+  var cameraActive = false;
+
+  toggleSwitch.addEventListener("change", function () {
+    cameraActive = !cameraActive;
+
+    if (cameraActive) {
+      videoElement.style.display = "block";
+      videoElement.src = "{{ url_for('home_blueprint.video_feed') }}"; // Set the src attribute
+      labelElement.innerText = "Kamera Menyala";
+    } else {
+      videoElement.style.display = "none";
+      videoElement.src = "{{ url_for('home_blueprint.close') }}"; // Reset the src attribute
+      labelElement.innerText = "Kamera Mati";
+    }
+  });
+
+  const convertBtn = document.getElementById("convert_btn");
+  const audioPlayer = document.getElementById("audio_player");
+
+  convertBtn.addEventListener("click", async () => {
+    const textToConvert = document.getElementById("transcript_div").textContent; // Change this to the text you want to convert
+    const apiUrl = "/convert_to_audio"; // Update this with your API endpoint URL
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: textToConvert }),
+      });
+
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        audioPlayer.src = audioUrl;
+        audioPlayer.style.display = "block";
+      } else {
+        const errorData = await response.json();
+        console.error("Error:", errorData.error);
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
+  });
+
+  const addSpaceBtn = document.getElementById("add_space_btn");
+  const messageDiv = document.getElementById("message");
+
+  addSpaceBtn.addEventListener("click", async () => {
+    try {
+      const response = await fetch("/add_space", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        messageDiv.style.display = "block";
+        setTimeout(() => {
+          messageDiv.style.display = "none";
+        }, 1000);
+      } else {
+        const errorData = await response.json();
+        console.error("Error:", errorData.error);
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
+  });
+</script>
+
+{% endblock javascripts %}

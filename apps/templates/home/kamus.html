@@ -1,0 +1,291 @@
+{% extends 'layouts/base.html' %} {% block title %} Kamus {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<style>
+  /* Gaya untuk input teks */
+  #user_input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    margin-bottom: 10px;
+  }
+
+  /* Gaya untuk tombol submit */
+  button[type="submit"] {
+    background-color: rgb(52, 71, 103);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  button[type="submit"]:hover {
+    background-color: #0056b3;
+  }
+
+  .close-button {
+    background-color: #e74c3c;
+    margin-top: 10px;
+    color: white;
+    border: none;
+    padding: 10px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+
+  .close-button:hover {
+    background-color: #c0392b;
+    transform: scale(1.05);
+  }
+
+  .play-button {
+    background-color: #5e72e4;
+    margin-top: 10px;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+
+  .play-button:hover {
+    background-color: #5e72e4;
+    transform: scale(1.05);
+  }
+</style>
+{% endblock stylesheets %} {% block content %}
+
+<div
+  class="position-absolute w-100 min-height-300 top-0"
+  style="background-image: url('{{ config.ASSETS_ROOT }}/img/profile-layout-header.jpg'); background-position-y: 50%;"
+>
+  <span class="mask bg-primary opacity-6"></span>
+</div>
+
+{% include "includes/sidenav.html" %}
+
+<main class="main-content position-relative border-radius-lg">
+  {% include "includes/navigation.html" %}
+  <div class="container-fluid py-4 align-items-center flex-column">
+    <!-- Apply d-flex, justify-content-center, align-items-center, and flex-column classes -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4 text-center">
+          <!-- Apply text-center class to center-align card contents -->
+          <h1 class="mb-4">Belajar Huruf Alfabet Isyarat</h1>
+          <!-- Add margin-bottom for spacing -->
+          {% if not combined_video_path %}
+          <form method="post" id="inputForm">
+            <div class="searchbox-wrap"></div>
+            <input
+              type="text"
+              placeholder="Masukkan teks atau kata..."
+              id="user_input"
+              name="user_input"
+            />
+            <button type="submit">Submit</button>
+            <div id="processingMessage" style="display: none">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="sr-only">Loading...</span>
+              </div>
+              Sedang proses...
+            </div>
+          </form>
+          <script>
+            document
+              .getElementById("inputForm")
+              .addEventListener("submit", function (event) {
+                event.preventDefault(); // Prevent form submission
+
+                // Show processing message and hide submit button
+                document.getElementById("processingMessage").style.display =
+                  "block";
+              });
+          </script>
+          {% endif %} {% if combined_video_path %}
+          <div class="d-flex justify-content-center mb-4">
+            <video id="videoPlayer" width="100%" controls>
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <script>
+            const videoPlayer = document.getElementById("videoPlayer");
+            let byteStart = 0;
+
+            function fetchVideoChunk() {
+              const xhr = new XMLHttpRequest();
+              xhr.open("GET", `/video_chunk?start=${byteStart}`, true);
+              xhr.responseType = "arraybuffer";
+
+              xhr.onload = function () {
+                if (xhr.status === 200) {
+                  const videoBlob = new Blob([xhr.response], {
+                    type: "video/mp4",
+                  });
+                  const videoURL = URL.createObjectURL(videoBlob);
+
+                  videoPlayer.src = videoURL;
+                  byteStart += xhr.response.byteLength;
+                }
+              };
+
+              xhr.send();
+            }
+
+            fetchVideoChunk();
+          </script>
+          {% endif %} {% if user_input %}
+          <h2 class="mt-4">Kata: {{ user_input }}</h2>
+          <!-- Add margin-top for spacing -->
+          <div class="row justify-content-center">
+            <!-- Center-align the content within the row -->
+            <div class="col-md-12">
+              <div class="row">
+                {% set image_counter = 1 %} {% for chunk in user_input|batch(4)
+                %} {% for letter in chunk %}
+                <div class="col-md-3 mb-4">
+                  <div class="letter-container text-center">
+                    <!-- Center-align text within the letter container -->
+                    <img
+                      src="{{ url_for('static', filename='kamusku/' + letter + '.png') }}"
+                      alt="{{ letter }}"
+                      width="150"
+                    />
+                    <p class="image-number"></p>
+                  </div>
+                </div>
+                {% endfor %} {% endfor %}
+              </div>
+            </div>
+          </div>
+          <a
+            class="btn btn-primary btn-danger w-100"
+            href="{{ url_for('home_blueprint.kamus') }}"
+          >
+            <i class="fas fa-times me-2"></i> Kembali
+          </a>
+          {% if error_message %}
+          <p>{{ error_message }}</p>
+          {% endif %} {% else %}
+          <div class="row justify-content-center">
+            <!-- Center-align the content within the row -->
+            {% for letter_data in letters_data %}
+            <div class="col-md-3">
+              <h2>{{ letter_data.letter }}</h2>
+              <div class="images-container">
+                {% for image in letter_data.images %}
+                <div class="image-item">
+                  <div class="text-center">
+                    <!-- Center-align text within the image container -->
+                    <img
+                      src="{{ url_for('static', filename='kamusku/' + image) }}"
+                      alt="{{ letter_data.letter }}"
+                      width="150"
+                    />
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="videos-container">
+                {% for video in letter_data.videos %}
+                <div class="video-item">
+                  <div class="text-center">
+                    <!-- Center-align text within the video container -->
+                    <button class="play-button" data-video="{{ video }}">
+                      Buka Video
+                    </button>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% include "includes/footer.html" %}
+</main>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  // Get all elements with the class 'image-number'
+  const imageNumberElements = document.querySelectorAll(".image-number");
+
+  // Loop through each element and set the image numbering
+  imageNumberElements.forEach((element, index) => {
+    element.textContent = index + 1;
+  });
+
+  // Menangkap semua elemen tombol "Play Video"
+  var playButtons = document.querySelectorAll(".play-button");
+
+  // Loop melalui setiap tombol dan tambahkan event listener
+  playButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      const videoFileName = this.getAttribute("data-video");
+      const videoContainer = this.closest(".video-item");
+      videoContainer.style.marginLeft = "10px";
+
+      if (videoFileName && videoContainer) {
+        // Sembunyikan tombol "Play Video"
+        videoContainer.innerHTML = "";
+
+        // Buat tombol untuk menutup video
+        const closeButton = document.createElement("button");
+        closeButton.textContent = "Close Video";
+        closeButton.classList.add("close-button");
+        closeButton.style.marginBottom = "10px"; // Beri sedikit jarak dari video
+        closeButton.addEventListener("click", function () {
+          videoContainer.innerHTML = ""; // Kosongkan konten video saat tombol ditutup
+          videoContainer.appendChild(button);
+        });
+
+        // Buat elemen video
+        const videoElement = document.createElement("video");
+        videoElement.src = `{{ url_for('static', filename='kamusku/') }}${videoFileName}`;
+        videoElement.controls = true;
+        videoElement.style.width = "100%";
+
+        videoContainer.appendChild(closeButton); // Tambahkan tombol "Close Video" sebelum elemen video
+        videoContainer.appendChild(videoElement);
+      }
+    });
+  });
+  document
+    .getElementById("inputForm")
+    .addEventListener("submit", function (event) {
+      event.preventDefault();
+      var userInput = document.getElementById("user_input").value;
+      if (userInput.trim() === "") {
+        Swal.fire({
+          icon: "error",
+          title: "Input Empty",
+          text: "Please enter some text or word before submitting.",
+        });
+      } else if (!/^[A-Za-z]+$/.test(userInput)) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid Input",
+          text: "Please enter only alphabet letters.",
+        });
+      } else {
+        // Proceed with the form submission
+        this.submit();
+      }
+    });
+</script>
+{% endblock javascripts %}

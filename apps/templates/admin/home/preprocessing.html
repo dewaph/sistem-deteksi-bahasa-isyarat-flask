@@ -1,0 +1,199 @@
+{% extends 'layouts/base.html' %} {% block title %} Preprocessing {% endblock
+title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<style></style>
+{% endblock stylesheets %} {% block content %}
+
+<div class="min-height-300 bg-primary position-absolute w-100"></div>
+
+{% include "admin/includes/sidenav.html" %}
+
+<main class="main-content position-relative border-radius-lg">
+  {% include "includes/navigation.html" %}
+
+  <div class="container-fluid py-4">
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4">
+          <div class="card-body px-0 pt-0 pb-2">
+            <div class="card-header pb-0 pt-3">
+              <h2>Preprocessing Data</h2>
+              <p>Klik tombol di bawah untuk memulai preprocessing gambar</p>
+              <form action="/preprocess" method="post">
+                <button
+                  type="submit"
+                  name="process_both_datasets"
+                  id="processButton"
+                  class="btn btn-primary"
+                >
+                  Mulai Preprocess Data
+                </button>
+                <div id="processingMessage" style="display: none">
+                  <div class="spinner-border spinner-border-sm" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                  Sedang proses...
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4">
+          <div class="card-header pb-0">
+            <h6>Preview</h6>
+          </div>
+          <div class="card-header pb-0 pt-3">
+            <div cclass="card-header pb-0 pt-3">
+              <div class="flex-container">
+                {% if dataset_1_images %}
+                <h2>Processed Images - Data 1 tangan</h2>
+                {% for class_label, images in dataset_1_images %} {% set huruf =
+                label_dataset_1[class_label] %}
+                <h3>Kelas: {{ huruf }}</h3>
+                <!-- Menggunakan huruf dari label_dataset_1 -->
+                <div>
+                  {% for img in images %}
+                  <div style="display: inline-block; margin: 10px">
+                    <img
+                      src="data:image/jpeg;base64,{{ img }}"
+                      alt="{{ huruf }} Image"
+                    />
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endfor %} {% endif %} {% if show_csv_button %}
+                <form method="post" action="/export-csv">
+                  <button
+                    type="button"
+                    onclick="handleExportCSV('onehand')"
+                    class="btn btn-outline-primary"
+                  >
+                    Export CSV 1 tangan
+                  </button>
+                </form>
+                <div id="exportProcessingMessage" style="display: none">
+                  <div class="spinner-grow spinner-grow-sm" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                  Exporting CSV 1 tangan...
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4">
+          <div class="card-header pb-0">
+            <h6>Preview</h6>
+          </div>
+          <div class="card-header pb-0 pt-3">
+            <div cclass="card-header pb-0 pt-3">
+              {% if dataset_2_images %}
+              <h2>Processed Images - Data 2 tangan</h2>
+              {% for class_label, images in dataset_2_images %} {% set huruf =
+              label_dataset_2[class_label] %}
+              <h3>Kelas: {{ huruf }}</h3>
+              <div>
+                {% for img in images %}
+                <div style="display: inline-block; margin: 10px">
+                  <img
+                    src="data:image/jpeg;base64,{{ img }}"
+                    alt="{{ huruf }} Image"
+                  />
+                </div>
+                {% endfor %}
+              </div>
+              {% endfor %} {% endif %} {% if show_csv_button %}
+              <form method="post" action="/export-csv">
+                <button
+                  type="button"
+                  onclick="handleExportCSV('twohand')"
+                  class="btn btn-outline-primary"
+                >
+                  Export CSV 2 tangan
+                </button>
+              </form>
+              <div id="exportProcessingMessage2" style="display: none">
+                <div class="spinner-grow spinner-grow-sm" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+                Exporting CSV 2 tangan...
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document
+    .getElementById("processButton")
+    .addEventListener("click", function () {
+      document.getElementById("processingMessage").style.display = "block";
+    });
+
+  // Function to handle CSV export button click
+  function handleExportCSV(csvType) {
+    document.getElementById("exportProcessingMessage").style.display = "block";
+    document.getElementById("exportProcessingMessage2").style.display = "block";
+
+    // Send AJAX request
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/export-csv", true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        document.getElementById("exportProcessingMessage").style.display =
+          "none";
+        document.getElementById("exportProcessingMessage2").style.display =
+          "none";
+        if (xhr.status === 200) {
+          var response = JSON.parse(xhr.responseText);
+          if (response.success) {
+            // Update the page content if export was successful
+            Swal.fire({
+              icon: "success",
+              title: "Success",
+              text: response.message,
+            });
+            // You can also update specific parts of the page if needed
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: "gagal membuat CSV",
+            });
+          }
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "An error occurred",
+          });
+        }
+      }
+    };
+    xhr.send("csv=" + encodeURIComponent(csvType));
+  }
+</script>
+{% endblock javascripts %}

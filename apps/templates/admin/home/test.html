@@ -1,0 +1,78 @@
+{% extends 'layouts/base.html' %} {% block title %} Terjemahan {% endblock title
+%}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<style>
+  #kartu {
+    height: 600px;
+  }
+</style>
+{% endblock stylesheets %} {% block content %}
+
+<div
+  class="position-absolute w-100 min-height-300 top-0"
+  style="background-image: url('{{ config.ASSETS_ROOT }}/img/profile-layout-header.jpg'); background-position-y: 50%;"
+>
+  <span class="mask bg-primary opacity-6"></span>
+</div>
+
+{% include "admin/includes/sidenav.html" %}
+
+<main class="main-content position-relative border-radius-lg">
+  {% include "includes/navigation.html" %}
+  <div class="container-fluid py-4 align-items-center flex-column">
+    <!-- Apply d-flex, justify-content-center, align-items-center, and flex-column classes -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4 text-center" id="kartu">
+          <h1>Real Time Testing</h1>
+          <div class="mt-3 form-check form-switch">
+            <input
+              class="form-check-input ms-2"
+              type="checkbox"
+              id="mt_toggle"
+            />
+            <label class="form-check-label" for="mt_toggle">Mulai kamera</label>
+          </div>
+          <div
+            id="videoContainer"
+            class="d-flex justify-content-center align-items-center"
+          >
+            <img id="videoStream" src="" width="70%" style="display: none" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+<script>
+  var videoElement = document.getElementById("videoStream");
+  var toggleSwitch = document.getElementById("mt_toggle");
+  var labelElement = document.querySelector(
+    ".form-check-label[for='mt_toggle']"
+  );
+
+  var cameraActive = false;
+
+  toggleSwitch.addEventListener("change", function () {
+    cameraActive = !cameraActive;
+
+    if (cameraActive) {
+      videoElement.style.display = "block";
+      videoElement.src = "{{ url_for('admin_blueprint.video') }}"; // Set the src attribute
+      labelElement.innerText = "Kamera Menyala";
+    } else {
+      videoElement.style.display = "none";
+      videoElement.src = "{{ url_for('admin_blueprint.tutup') }}"; // Reset the src attribute
+      labelElement.innerText = "Kamera Mati";
+    }
+  });
+</script>
+
+{% endblock javascripts %}

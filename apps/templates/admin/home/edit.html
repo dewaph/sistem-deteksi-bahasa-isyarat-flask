@@ -1,0 +1,346 @@
+{% extends 'layouts/base.html' %} {% block title %} Edit Kamus {% endblock title
+%}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<style>
+  #selected_letter {
+    max-width: 200px; /* Sesuaikan lebar maksimum sesuai preferensi Anda */
+  }
+
+  /* Gaya untuk label yang dapat ditekan */
+  .upload-label {
+    cursor: pointer;
+    color: #007bff; /* Warna tautan */
+  }
+
+  .upload-label i {
+    margin-right: 5px; /* Ruang antara ikon dan teks */
+  }
+
+  #image-container,
+  #video-container {
+    flex-basis: calc(50% - 10px); /* Two equal columns with 20px gap */
+
+    overflow: hidden;
+  }
+
+  #image-container img,
+  #video-container video {
+    width: 100%;
+    object-fit: cover;
+  }
+  .flex-container {
+    display: flex;
+    justify-content: space-between; /* Align items in a row with space between */
+  }
+</style>
+{% endblock stylesheets %} {% block content %}
+
+<div class="min-height-300 bg-primary position-absolute w-100"></div>
+
+{% include "admin/includes/sidenav.html" %}
+
+<main class="main-content position-relative border-radius-lg">
+  {% include "includes/navigation.html" %}
+
+  <div class="container-fluid py-4">
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4">
+          <div class="card-header pb-0">
+            <h2>Edit Kamus</h2>
+          </div>
+          <div class="card-body px-0 pt-0 pb-2">
+            <div class="card-header pb-0 pt-3">
+              <form method="POST" enctype="multipart/form-data">
+                <label for="selected_letter">Pilih Huruf:</label>
+                <select
+                  id="selected_letter"
+                  name="selected_letter"
+                  class="form-select"
+                >
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                  <option value="E">E</option>
+                  <option value="F">F</option>
+                  <option value="G">G</option>
+                  <option value="H">H</option>
+                  <option value="I">I</option>
+                  <option value="J">J</option>
+                  <option value="K">K</option>
+                  <option value="L">L</option>
+                  <option value="M">M</option>
+                  <option value="N">N</option>
+                  <option value="O">O</option>
+                  <option value="P">P</option>
+                  <option value="Q">Q</option>
+                  <option value="R">R</option>
+                  <option value="S">S</option>
+                  <option value="T">T</option>
+                  <option value="U">U</option>
+                  <option value="V">V</option>
+                  <option value="W">W</option>
+                  <option value="X">X</option>
+                  <option value="Y">Y</option>
+                  <option value="Z">Z</option>
+                </select>
+
+                <div>
+                  <label id="image-label"
+                    >Unggah atau Edit gambar untuk huruf {{ selected_letter
+                    }}:</label
+                  >
+                  <input
+                    type="file"
+                    name="uploaded_image"
+                    accept=".png, .jpg, .jpeg"
+                    id="uploaded_image"
+                    class="form-input"
+                  />
+                </div>
+
+                <div>
+                  <label id="video-label"
+                    >Unggah atau Edit video untuk huruf {{ selected_letter
+                    }}:</label
+                  >
+                  <input
+                    type="file"
+                    name="uploaded_video"
+                    accept=".mp4"
+                    id="uploaded_video"
+                    class="form-input"
+                  />
+                </div>
+
+                <div>
+                  <input
+                    type="submit"
+                    name="save_button"
+                    value="Simpan"
+                    class="btn btn-outline-success"
+                  />
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4">
+          <div class="card-header pb-0">
+            <h6>Preview</h6>
+          </div>
+          <div class="card-header pb-0 pt-3">
+            <div cclass="card-header pb-0 pt-3">
+              <div class="flex-container">
+                <div id="image-container"></div>
+                <div id="video-container"></div>
+              </div>
+            </div>
+            <br />
+            <div>
+              <input
+                type="submit"
+                name="delete_button"
+                value="Hapus"
+                class="btn btn-outline-danger"
+                style="display: none"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% if swal_success_message %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    Swal.fire({
+      title: "Success!",
+      text: "{{ swal_success_message }}",
+      icon: "success",
+      confirmButtonText: "OK",
+    });
+  });
+</script>
+{% endif %} {% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const imageInput = document.querySelector('input[name="uploaded_image"]');
+    const videoInput = document.querySelector('input[name="uploaded_video"]');
+    const saveButton = document.querySelector('input[name="save_button"]');
+    const deleteButton = document.querySelector('input[name="delete_button"]');
+
+    saveButton.addEventListener("click", function (event) {
+      const hasImage = imageInput.files.length > 0;
+      const hasVideo = videoInput.files.length > 0;
+
+      if (!hasImage && !hasVideo) {
+        event.preventDefault(); // Prevent form submission
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Gambar dan Video belum dipilih",
+        });
+      } else if ((!hasImage && hasVideo) || (hasImage && !hasVideo)) {
+        event.preventDefault(); // Prevent form submission
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Pilih keduanya gambar dan video sebelum menyimpan.",
+        });
+      }
+    });
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const imageLabel = document.getElementById("image-label");
+    const videoLabel = document.getElementById("video-label");
+    const imagesl = document.getElementById("image");
+    const videosl = document.getElementById("video");
+
+    const dropdown = document.getElementById("selected_letter");
+
+    dropdown.addEventListener("change", function () {
+      const selectedLetter = dropdown.value;
+      imageLabel.innerText = `Unggah atau Edit gambar untuk huruf ${selectedLetter}:`;
+      videoLabel.innerText = `Unggah atau Edit video untuk huruf ${selectedLetter}:`;
+      imagesl.innerText = `Images for ${selectedLetter}`;
+      videosl.innerText = `Video for ${selectedLetter}`;
+    });
+  });
+
+  const selectedLetterInput = document.getElementById("selected_letter");
+  const imageContainer = document.getElementById("image-container");
+  const videoContainer = document.getElementById("video-container");
+
+  function toggleDeleteButtonVisibility() {
+    const deleteButton = document.querySelector('input[name="delete_button"]');
+    const hasImage = imageContainer.querySelector("img") !== null;
+    const hasVideo = videoContainer.querySelector("video") !== null;
+
+    if (hasImage && hasVideo) {
+      deleteButton.style.display = "block";
+    } else {
+      deleteButton.style.display = "none";
+    }
+  }
+
+  function fetchData() {
+    const selectedLetter = selectedLetterInput.value;
+
+    imageContainer.innerHTML = "Fetching image data...";
+    videoContainer.innerHTML = "Fetching video data...";
+
+    fetch(`/get_data?letter=${selectedLetter}&data_type=image`)
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Error fetching image data.");
+        }
+        return response.json();
+      })
+      .then(function (imageData) {
+        if (imageData) {
+          imageContainer.innerHTML = `<h2>Gambar:</h2><img src="data:image/jpeg;base64,${imageData}" alt="Image">`;
+        } else {
+          imageContainer.innerHTML = "<p>Tidak ada data gambar.</p>";
+        }
+        toggleDeleteButtonVisibility();
+      })
+      .catch(function (error) {
+        imageContainer.innerHTML = `<p>Error: ${
+          error.message || "Unknown error"
+        }</p>`;
+      });
+
+    fetch(`/get_data?letter=${selectedLetter}&data_type=video`)
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Error fetching video data.");
+        }
+        return response.json();
+      })
+      .then(function (videoData) {
+        if (videoData) {
+          videoContainer.innerHTML = `<h2>Video:</h2><video controls><source src="data:video/mp4;base64,${videoData}" type="video/mp4"></video>`;
+        } else {
+          videoContainer.innerHTML = "<p>Tidak ada data video.</p>";
+        }
+        toggleDeleteButtonVisibility();
+      })
+      .catch(function (error) {
+        videoContainer.innerHTML = `<p>Error: ${
+          error.message || "Unknown error"
+        }</p>`;
+      });
+  }
+
+  selectedLetterInput.addEventListener("change", fetchData);
+  fetchData();
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const deleteButton = document.querySelector('input[name="delete_button"]');
+    const selectedLetterInput = document.getElementById("selected_letter");
+
+    deleteButton.addEventListener("click", function (event) {
+      event.preventDefault(); // Prevent form submission
+
+      const selectedLetter = selectedLetterInput.value;
+
+      Swal.fire({
+        title: `Hapus Kamus ${selectedLetter}`,
+        text: `Apakah Anda yakin ingin menghapus data huruf ${selectedLetter} dari kamus?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Ya, Hapus",
+        cancelButtonText: "Batal",
+      }).then(function (confirmed) {
+        if (confirmed.isConfirmed) {
+          fetch(`/delete_letter?letter=${selectedLetter}`, {
+            method: "DELETE",
+          })
+            .then(function (response) {
+              if (response.ok) {
+                Swal.fire({
+                  title: "Success!",
+                  text: `Huruf ${selectedLetter} berhasil dihapus dari database.`,
+                  icon: "success",
+                  confirmButtonText: "OK",
+                }).then(function (result) {
+                  if (result.isConfirmed) {
+                    window.location.href = "/edit_kamus";
+                  }
+                });
+              } else {
+                throw new Error("Error deleting data.");
+              }
+            })
+            .catch(function (error) {
+              Swal.fire({
+                title: "Error!",
+                text: error.message || "Terjadi kesalahan.",
+                icon: "error",
+                confirmButtonText: "OK",
+              });
+            });
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock javascripts %}

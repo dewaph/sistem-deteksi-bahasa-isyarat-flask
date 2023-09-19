@@ -1,0 +1,848 @@
+{% extends 'layouts/base.html' %} {% block title %} Dashboard {% endblock title
+%}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<style>
+  /* Menyesuaikan tinggi card */
+  #csv-card {
+    height: 400px; /* Ubah tinggi sesuai kebutuhan */
+  }
+
+  #csv-card2 {
+    height: 400px; /* Ubah tinggi sesuai kebutuhan */
+  }
+
+  #hasil {
+    height: 300px;
+  }
+
+  /* Mengizinkan overflow di dalam card body */
+  #csv-card .card-body {
+    overflow-y: auto;
+  }
+
+  #csv-card2 .card-body {
+    overflow-y: auto;
+  }
+
+  .custom-file-input::-webkit-file-upload-button {
+    position: absolute;
+    left: -9999px;
+  }
+  .custom-file-input::before {
+    content: "Pilih File";
+    display: inline-block;
+    background: linear-gradient(top, #f9f9f9, #e3e3e3);
+    border: 1px solid #999;
+    border-radius: 3px;
+    padding: 5px 8px;
+    outline: none;
+    white-space: nowrap;
+
+    cursor: pointer;
+    text-shadow: 1px 1px #fff;
+    font-weight: 700;
+    font-size: 10pt;
+  }
+  .custom-file-input:hover::before {
+    border-color: black;
+  }
+  .custom-file-input:active::before {
+    background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
+  }
+  .table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .table th {
+    background-color: #6f81e7;
+    color: whitesmoke;
+    text-align: left; /* Poros perataan teks */
+  }
+
+  .table tr:hover {
+    background-color: #ddd;
+  }
+
+  .container-fluid.py-1 {
+    position: relative;
+    top: -200px; /* Atur nilai negatif sesuai kebutuhan */
+  }
+
+  .sweet-alert-large-image {
+    width: 100% !important; /* Adjust the width as needed */
+  }
+
+  .sweet-alert-content-large-image {
+    width: 100% !important;
+  }
+</style>
+{% endblock stylesheets %} {% block content %}
+
+<div class="min-height-300 bg-primary position-absolute w-100"></div>
+
+{% include "admin/includes/sidenav.html" %}
+
+<main class="main-content position-relative border-radius-lg">
+  {% include "includes/navigation.html" %}
+
+  <div class="container-fluid py-4">
+    <div class="row mt-4">
+      <div class="col-lg-13 mb-lg-0 mb-4">
+        <div class="card" id="pertama" style="display: block">
+          <div class="card-body p-3">
+            <div class="row">
+              <div class="col-lg-7">
+                <div class="d-flex flex-column h-100">
+                  <h2 class="font-weight-bolder">Training Model</h2>
+                  <p>Upload CSV File data 1 Tangan</p>
+                  <form
+                    method="POST"
+                    action="/csv_upload"
+                    enctype="multipart/form-data"
+                  >
+                    <input
+                      type="file"
+                      name="csv_file1"
+                      accept=".csv"
+                      id="csv_input1"
+                      class="custom-file-input"
+                    />
+
+                    <br />
+                    <br />
+                    <p>Upload CSV File data 2 Tangan</p>
+                    <input
+                      type="file"
+                      name="csv_file2"
+                      accept=".csv"
+                      id="csv_input2"
+                      class="custom-file-input"
+                    />
+                  </form>
+                </div>
+              </div>
+              <div class="col-lg-4 ms-auto text-center mt-3 mt-lg-0">
+                <div class="bg-gradient-primary border-radius-lg h-100">
+                  <img
+                    src="{{ config.ASSETS_ROOT }}/img/shapes/waves-white.svg"
+                    class="position-absolute h-100 w-50 top-0 d-lg-block d-none"
+                    alt="waves"
+                  />
+                  <div
+                    class="position-relative d-flex align-items-center justify-content-center h-100"
+                  >
+                    <img
+                      class="w-60 position-relative z-index-2 pt-4"
+                      src="{{ config.ASSETS_ROOT }}/img/illustrations/ai.png"
+                      alt="rocket"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br />
+
+    <div class="row mt-4">
+      <div class="col-lg-13 mb-lg-0 mb-4">
+        <div class="card z-index-2">
+          <div class="card" id="csv-card" style="display: none">
+            <div class="card-header">CSV Tabel 1 Tangan</div>
+            <div class="card-body">
+              <div id="csv-table1" class="table-responsive">
+                {{ table_data1 | safe }}
+                <!-- Menampilkan tabel yang dihasilkan oleh pandas -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br />
+
+    <div class="row mt-4">
+      <div class="col-lg-13 mb-lg-0 mb-4">
+        <div class="card z-index-2">
+          <div class="card" id="csv-card2" style="display: none">
+            <div class="card-header">CSV Tabel 2 Tangan</div>
+            <div class="card-body">
+              <div id="csv-table2" class="table-responsive">
+                {{ table_data2 | safe }}
+                <!-- Menampilkan tabel yang dihasilkan oleh pandas -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br />
+
+    <button
+      class="btn btn-warning"
+      style="display: none"
+      id="start-training-btn"
+    >
+      Mulai Training
+    </button>
+    <div id="exportProcessingMessage" style="display: none">
+      <div class="spinner-grow spinner-grow-sm" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+      Mulai Training...
+    </div>
+  </div>
+
+  <div id="result-section" style="display: none">
+    <div class="container-fluid py-1">
+      <h2 style="color: white">Hasil Training</h2>
+      <div class="card" id="hasil">
+        <div class="card-header pb-0 pt-1">
+          <h2>Data 1 Tangan</h2>
+          <div class="row mt-4">
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          True Positive (TP)
+                        </p>
+                        <h5 class="font-weight-bolder" id="TP_1"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-primary shadow-primary text-center"
+                      >
+                        <i
+                          class="ni ni-check-bold text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          True Negative (TN)
+                        </p>
+                        <h5 class="font-weight-bolder" id="TN_1"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-danger shadow-danger text-center"
+                      >
+                        <i
+                          class="ni ni-fat-delete text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          False Positive (FP)
+                        </p>
+                        <h5 class="font-weight-bolder" id="FP_1"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-success shadow-success text-center"
+                      >
+                        <i
+                          class="ni ni-fat-add text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          False Negative (FN)
+                        </p>
+                        <h5 class="font-weight-bolder" id="FN_1"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-warning shadow-warning text-center"
+                      >
+                        <i
+                          class="ni ni-fat-remove text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-header pb-0 pt-1">
+          <div class="row mt-4">
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          Akurasi
+                        </p>
+                        <h5 class="font-weight-bolder" id="akurasi_1"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle"
+                      >
+                        <i
+                          class="ni ni-chart-bar-32 text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          Precision
+                        </p>
+                        <h5 class="font-weight-bolder" id="precision_1"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-danger shadow-danger text-center rounded-circle"
+                      >
+                        <i
+                          class="ni ni-chart-pie-35 text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          Recall
+                        </p>
+                        <h5 class="font-weight-bolder" id="recall_1"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle"
+                      >
+                        <i
+                          class="ni ni-sound-wave text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          F-1 Score
+                        </p>
+                        <h5 class="font-weight-bolder" id="f_1"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle"
+                      >
+                        <i
+                          class="ni ni-vector text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <br />
+          <h2>Data 2 Tangan</h2>
+          <div class="row mt-4">
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          True Positive (TP)
+                        </p>
+                        <h5 class="font-weight-bolder" id="TP_2"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-primary shadow-primary text-center"
+                      >
+                        <i
+                          class="ni ni-check-bold text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          True Negative (TN)
+                        </p>
+                        <h5 class="font-weight-bolder" id="TN_2"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-danger shadow-danger text-center"
+                      >
+                        <i
+                          class="ni ni-fat-delete text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          False Positive
+                        </p>
+                        <h5 class="font-weight-bolder" id="FP_2"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-success shadow-success text-center"
+                      >
+                        <i
+                          class="ni ni-fat-add text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          False Negative
+                        </p>
+                        <h5 class="font-weight-bolder" id="FN_2"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-warning shadow-warning text-center"
+                      >
+                        <i
+                          class="ni ni-fat-remove text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-header pb-0 pt-1">
+          <div class="row mt-4">
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          Akurasi
+                        </p>
+                        <h5 class="font-weight-bolder" id="akurasi_2"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle"
+                      >
+                        <i
+                          class="ni ni-chart-bar-32 text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          Precision
+                        </p>
+                        <h5 class="font-weight-bolder" id="precision_2"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-danger shadow-danger text-center rounded-circle"
+                      >
+                        <i
+                          class="ni ni-chart-pie-35 text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          Recall
+                        </p>
+                        <h5 class="font-weight-bolder" id="recall_2"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle"
+                      >
+                        <i
+                          class="ni ni-sound-wave text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+              <div class="card">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-8">
+                      <div class="numbers">
+                        <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                          F-1 Score
+                        </p>
+                        <h5 class="font-weight-bolder" id="f_2"></h5>
+                      </div>
+                    </div>
+                    <div class="col-4 text-end">
+                      <div
+                        class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle"
+                      >
+                        <i
+                          class="ni ni-vector text-lg opacity-10"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <br />
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="card z-index-2">
+                <div class="card" id="csv-card">
+                  <div class="card-header">Confusion Matrix - Model 1</div>
+                  <div class="card-body">
+                    <img
+                      id="heatmap1"
+                      src=""
+                      alt="Heatmap 1"
+                      style="width: 100%"
+                    />
+                    <div class="d-flex justify-content-center mt-3">
+                      <button id="btn-model1" class="btn btn-primary">
+                        Lihat Gambar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="card z-index-2">
+                <div class="card" id="csv-card">
+                  <div class="card-header">Confusion Matrix - Model 2</div>
+                  <div class="card-body">
+                    <img
+                      id="heatmap2"
+                      src=""
+                      alt="Heatmap 2"
+                      style="width: 100%"
+                    />
+                    <div class="d-flex justify-content-center mt-3">
+                      <button id="btn-model2" class="btn btn-primary">
+                        Lihat Gambar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% endblock content %}
+
+  <!-- Specific JS goes HERE -->
+  {% block javascripts %}
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <!-- Sebelum akhir tag </body> -->
+  <script>
+    $(document).ready(function () {
+      var csv1Selected = false;
+      var csv2Selected = false;
+      $("#csv_input1").change(function () {
+        var formData = new FormData();
+        formData.append("csv_file1", $(this)[0].files[0]);
+
+        $.ajax({
+          url: "/csv_upload",
+          type: "POST",
+          data: formData,
+          contentType: false,
+          processData: false,
+          success: function (response) {
+            $("#csv-table1").html(response.table_data1);
+            $("#csv-card").show(); // Tampilkan card CSV setelah file dipilih
+            csv1Selected = true;
+            checkStartTrainingVisibility();
+          },
+        });
+      });
+
+      $("#csv_input2").change(function () {
+        var formData = new FormData();
+        formData.append("csv_file2", $(this)[0].files[0]);
+
+        $.ajax({
+          url: "/csv_upload",
+          type: "POST",
+          data: formData,
+          contentType: false,
+          processData: false,
+          success: function (response) {
+            $("#csv-table2").html(response.table_data2);
+            $("#csv-card2").show(); // Tampilkan card CSV setelah file dipilih
+            csv2Selected = true;
+            checkStartTrainingVisibility();
+          },
+        });
+      });
+
+      function checkStartTrainingVisibility() {
+        if (csv1Selected && csv2Selected) {
+          $("#start-training-btn").show();
+        } else {
+          $("#start-training-btn").hide();
+        }
+      }
+    });
+
+    function showExportProcessingMessage(message) {
+      var exportProcessingMessage = document.getElementById(
+        "exportProcessingMessage"
+      );
+      exportProcessingMessage.innerText = message;
+      exportProcessingMessage.style.display = "block";
+    }
+
+    // Function to hide processing message
+    function hideExportProcessingMessage() {
+      var exportProcessingMessage = document.getElementById(
+        "exportProcessingMessage"
+      );
+
+      exportProcessingMessage.style.display = "none";
+    }
+
+    $(document).ready(function () {
+      $("#start-training-btn").click(function () {
+        document.getElementById("exportProcessingMessage").style.display =
+          "block";
+        $.ajax({
+          url: "/start_training",
+          type: "POST",
+          success: function (response) {
+            $("#pertama").hide();
+            $("#csv-card").hide();
+            $("#csv-card2").hide();
+            $("#start-training-btn").hide();
+            document.getElementById("exportProcessingMessage").style.display =
+              "none";
+            // Tampilkan pesan bahwa pelatihan selesai
+            Swal.fire({
+              icon: "success",
+              title: "Training Sukses",
+              text: response.message,
+            });
+
+            // Tampilkan hasil kalkulasi model
+            $("#TP_1").text(response.TP_1);
+            $("#TN_1").text(response.TN_1);
+            $("#FP_1").text(response.FP_1);
+            $("#FN_1").text(response.FN_1);
+            $("#akurasi_1").text(response.akurasi_1);
+            $("#precision_1").text(response.precision_1);
+            $("#recall_1").text(response.recall_1);
+            $("#f_1").text(response.f_1);
+            $("#TP_2").text(response.TP_2);
+            $("#TN_2").text(response.TN_2);
+            $("#FP_2").text(response.FP_2);
+            $("#FN_2").text(response.FN_2);
+            $("#akurasi_2").text(response.akurasi_2);
+            $("#precision_2").text(response.precision_2);
+            $("#recall_2").text(response.recall_2);
+            $("#f_2").text(response.f_2);
+
+            // Tampilkan gambar heatmap
+            $("#heatmap1").attr(
+              "src",
+              "data:image/png;base64," + response.heatmap1_data
+            );
+            $("#heatmap2").attr(
+              "src",
+              "data:image/png;base64," + response.heatmap2_data
+            );
+            $("#result-section").show();
+          },
+          error: function (xhr, status, error) {
+            // Tangani kesalahan jika terjadi
+            console.log("AJAX Error:", xhr.responseText);
+          },
+        });
+      });
+    });
+    // Fungsi untuk menampilkan Sweet Alert dengan gambar lebih besar
+    function showLargeImage(imageSrc) {
+      Swal.fire({
+        imageUrl: imageSrc,
+        imageWidth: 900, // Ubah ukuran gambar sesuai kebutuhan
+        imageAlt: "Large Image",
+        showCloseButton: true,
+        confirmButtonText: "Tutup",
+        customClass: "sweet-alert-large-image",
+      });
+    }
+
+    // Event listener for button Model 1
+    $("#btn-model1").on("click", function () {
+      var heatmap1Src = $("#heatmap1").attr("src");
+      showLargeImage(heatmap1Src);
+    });
+
+    // Event listener for button Model 2
+    $("#btn-model2").on("click", function () {
+      var heatmap2Src = $("#heatmap2").attr("src");
+      showLargeImage(heatmap2Src);
+    });
+  </script>
+
+  {% endblock javascripts %}
+</main>
