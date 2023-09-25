@@ -222,10 +222,8 @@
 {% block javascripts %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  // Get all elements with the class 'image-number'
   const imageNumberElements = document.querySelectorAll(".image-number");
 
-  // Loop through each element and set the image numbering
   imageNumberElements.forEach((element, index) => {
     element.textContent = index + 1;
   });
