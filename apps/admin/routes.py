@@ -1,5 +1,5 @@
 from apps.admin import blueprint
-from flask import render_template, request, jsonify, Response
+from flask import render_template, request, jsonify, Response, send_file, send_from_directory
 from flask_login import login_required
 from jinja2 import TemplateNotFound
 from .dashboardcontrol import count_data_in_table, count_unique_labels, is_label_exists, is_huruf_exists_in_tables, get_db_connection
@@ -338,7 +338,23 @@ def export_csv():
         return jsonify({"success": True, "message": "CSV berhasil diexport", "file_path": file_path})
     else:
         return jsonify({"success": False, "message": "gagal membuat CSV"})
+    
+@blueprint.route('/download_csv1')
+def download_csv1():
+    file_path = process_hand_landmarks_data1()
+    if file_path:
+        return send_file(file_path, as_attachment=True)
+    else:
+        return "No data to download."
 
+@blueprint.route('/download_csv2')
+def download_csv2():
+    file_path = process_hand_landmarks_data2()
+    if file_path:
+        return send_file(file_path, as_attachment=True)
+    else:
+        return "No data to download."
+    
 UPLOAD_FOLDER = 'uploads'
 
 if not os.path.exists(UPLOAD_FOLDER):

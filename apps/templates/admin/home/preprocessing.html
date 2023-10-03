@@ -69,10 +69,11 @@ title %}
                   {% endfor %}
                 </div>
                 {% endfor %} {% endif %} {% if show_csv_button %}
+
                 <form method="post" action="/export-csv">
                   <button
+                    id="downloadButton"
                     type="button"
-                    onclick="handleExportCSV('onehand')"
                     class="btn btn-outline-primary"
                   >
                     Export CSV 1 tangan
@@ -118,8 +119,8 @@ title %}
               {% endfor %} {% endif %} {% if show_csv_button %}
               <form method="post" action="/export-csv">
                 <button
+                  id="downloadButton2"
                   type="button"
-                  onclick="handleExportCSV('twohand')"
                   class="btn btn-outline-primary"
                 >
                   Export CSV 2 tangan
@@ -195,5 +196,59 @@ title %}
     };
     xhr.send("csv=" + encodeURIComponent(csvType));
   }
+  document
+    .getElementById("downloadButton")
+    .addEventListener("click", function () {
+      document.getElementById("exportProcessingMessage").style.display =
+        "block";
+      // Send an AJAX request to the Flask endpoint for CSV download
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/download_csv1", true);
+      xhr.responseType = "blob";
+
+      xhr.onload = function () {
+        document.getElementById("exportProcessingMessage").style.display =
+          "none";
+        if (xhr.status === 200) {
+          // Create a download link and trigger the download
+          var blob = xhr.response;
+          var link = document.createElement("a");
+          link.href = window.URL.createObjectURL(blob);
+          link.download = "data1tangan.csv";
+          link.click();
+        } else {
+          console.error("Error downloading CSV");
+        }
+      };
+
+      xhr.send();
+    });
+  document
+    .getElementById("downloadButton2")
+    .addEventListener("click", function () {
+      document.getElementById("exportProcessingMessage2").style.display =
+        "block";
+      // Send an AJAX request to the Flask endpoint for CSV download
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/download_csv2", true);
+      xhr.responseType = "blob";
+
+      xhr.onload = function () {
+        document.getElementById("exportProcessingMessage2").style.display =
+          "none";
+        if (xhr.status === 200) {
+          // Create a download link and trigger the download
+          var blob = xhr.response;
+          var link = document.createElement("a");
+          link.href = window.URL.createObjectURL(blob);
+          link.download = "data2tangan.csv";
+          link.click();
+        } else {
+          console.error("Error downloading CSV");
+        }
+      };
+
+      xhr.send();
+    });
 </script>
 {% endblock javascripts %}

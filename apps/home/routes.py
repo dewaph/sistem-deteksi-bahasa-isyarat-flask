@@ -176,6 +176,21 @@ def add_space():
 
     return jsonify({"message": "Spasi berhasil ditambahkan ke file."}), 200
 
+@blueprint.route('/remove_last_character', methods=['POST'])
+@login_required
+def remove_last_character():
+    try:
+        with open("transcript.txt", "r+") as f:
+            text = f.read()
+            if text:
+                # Remove the last character by truncating the file
+                f.seek(0, os.SEEK_END)
+                f.truncate(f.tell() - 1)
+    except Exception as e:
+        return str(e), 500
+
+    return "Hapus karakter terakhir dari file berhasil.", 200
+
 
 def load_model_from_database(model_name):
     conn = get_db_connection()
@@ -281,6 +296,10 @@ def generate_frames():
 
                 x2 = int(max(x_) * W) - 10
                 y2 = int(max(y_) * H) - 10
+                prediction1 = model1.predict([np.asarray(data_aux)])
+                predicted_character = labels_dict1[int(prediction1[0])]
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 0), 4)
+                cv2.putText(frame, predicted_character, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 0, 0), 3, cv2.LINE_AA)
 
                 if start_time is None:
                     start_time = time.time()  # Set waktu awal jika belum diinisialisasi
@@ -303,6 +322,10 @@ def generate_frames():
 
                 x2 = int(max(x_) * W) - 10
                 y2 = int(max(y_) * H) - 10
+                prediction2 = model2.predict([np.asarray(data_aux)])
+                predicted_character = labels_dict2[int(prediction2[0])]
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 0), 4)
+                cv2.putText(frame, predicted_character, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 0, 0), 3, cv2.LINE_AA)
 
                 if start_time is None:
                     start_time = time.time()  # Set waktu awal jika belum diinisialisasi

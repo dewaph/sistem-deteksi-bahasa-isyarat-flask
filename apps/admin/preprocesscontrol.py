@@ -195,6 +195,7 @@ def process_hand_landmarks_data1():
         file_path = os.path.join(folder_path, csv_filename)
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
+        file_path = os.path.abspath(file_path)
         with open(file_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['label'] + [f'data_{i}' for i in range(len(data[0]))])  # Writing column headers
@@ -255,6 +256,7 @@ def process_hand_landmarks_data2():
         # Membuat direktori jika belum ada
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
+        file_path = os.path.abspath(file_path)
         with open(file_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['label'] + [f'data_{i}' for i in range(len(data[0]))])  # Writing column headers

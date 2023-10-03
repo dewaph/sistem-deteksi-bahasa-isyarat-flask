@@ -58,6 +58,7 @@
           <div class="transcript">
             <p>Terjemahan:</p>
             <div id="transcript_div"></div>
+            <button id="delete_btn" class="btn btn-danger">Hapus</button>
             <button id="add_space_btn" class="btn btn-secondary">
               Tambah Spasi
             </button>
@@ -151,6 +152,13 @@
 
   const addSpaceBtn = document.getElementById("add_space_btn");
   const messageDiv = document.getElementById("message");
+
+  document.getElementById("delete_btn").addEventListener("click", function () {
+    // Send a POST request to the server
+    fetch("/remove_last_character", {
+      method: "POST",
+    });
+  });
 
   addSpaceBtn.addEventListener("click", async () => {
     try {
