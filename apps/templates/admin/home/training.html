@@ -1,29 +1,13 @@
-{% extends 'layouts/base.html' %} {% block title %} Dashboard {% endblock title
+{% extends 'layouts/base.html' %} {% block title %} Training {% endblock title
 %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}
 <style>
   /* Menyesuaikan tinggi card */
-  #csv-card {
-    height: 400px; /* Ubah tinggi sesuai kebutuhan */
-  }
-
-  #csv-card2 {
-    height: 400px; /* Ubah tinggi sesuai kebutuhan */
-  }
 
   #hasil {
     height: 300px;
-  }
-
-  /* Mengizinkan overflow di dalam card body */
-  #csv-card .card-body {
-    overflow-y: auto;
-  }
-
-  #csv-card2 .card-body {
-    overflow-y: auto;
   }
 
   .custom-file-input::-webkit-file-upload-button {
@@ -73,11 +57,11 @@
   }
 
   .sweet-alert-large-image {
-    width: 100% !important; /* Adjust the width as needed */
+    width: 80% !important; /* Adjust the width as needed */
   }
 
   .sweet-alert-content-large-image {
-    width: 100% !important;
+    width: 80% !important;
   }
 </style>
 {% endblock stylesheets %} {% block content %}
@@ -89,73 +73,14 @@
 <main class="main-content position-relative border-radius-lg">
   {% include "includes/navigation.html" %}
 
-  <div class="container-fluid py-4">
-    <div class="row mt-4">
-      <div class="col-lg-13 mb-lg-0 mb-4">
-        <div class="card" id="pertama" style="display: block">
-          <div class="card-body p-3">
-            <div class="row">
-              <div class="col-lg-7">
-                <div class="d-flex flex-column h-100">
-                  <h2 class="font-weight-bolder">Training Model</h2>
-                  <p>Upload CSV File data 1 Tangan</p>
-                  <form
-                    method="POST"
-                    action="/csv_upload"
-                    enctype="multipart/form-data"
-                  >
-                    <input
-                      type="file"
-                      name="csv_file1"
-                      accept=".csv"
-                      id="csv_input1"
-                      class="custom-file-input"
-                    />
-
-                    <br />
-                    <br />
-                    <p>Upload CSV File data 2 Tangan</p>
-                    <input
-                      type="file"
-                      name="csv_file2"
-                      accept=".csv"
-                      id="csv_input2"
-                      class="custom-file-input"
-                    />
-                  </form>
-                </div>
-              </div>
-              <div class="col-lg-4 ms-auto text-center mt-3 mt-lg-0">
-                <div class="bg-gradient-primary border-radius-lg h-100">
-                  <img
-                    src="{{ config.ASSETS_ROOT }}/img/shapes/waves-white.svg"
-                    class="position-absolute h-100 w-50 top-0 d-lg-block d-none"
-                    alt="waves"
-                  />
-                  <div
-                    class="position-relative d-flex align-items-center justify-content-center h-100"
-                  >
-                    <img
-                      class="w-60 position-relative z-index-2 pt-4"
-                      src="{{ config.ASSETS_ROOT }}/img/illustrations/ai.png"
-                      alt="rocket"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <br />
-
+  <div class="container-fluid py-2">
+    <h1 style="color: white">Data Training</h1>
     <div class="row mt-4">
       <div class="col-lg-13 mb-lg-0 mb-4">
         <div class="card z-index-2">
-          <div class="card" id="csv-card" style="display: none">
-            <div class="card-header">CSV Tabel 1 Tangan</div>
-            <div class="card-body">
+          <div class="card" id="csv-card" style="display: block">
+            <h3 class="card-header">Data 1 Tangan</h3>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto">
               <div id="csv-table1" class="table-responsive">
                 {{ table_data1 | safe }}
                 <!-- Menampilkan tabel yang dihasilkan oleh pandas -->
@@ -170,9 +95,9 @@
     <div class="row mt-4">
       <div class="col-lg-13 mb-lg-0 mb-4">
         <div class="card z-index-2">
-          <div class="card" id="csv-card2" style="display: none">
-            <div class="card-header">CSV Tabel 2 Tangan</div>
-            <div class="card-body">
+          <div class="card" id="csv-card2" style="display: block">
+            <h3 class="card-header">Data 2 Tangan</h3>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto">
               <div id="csv-table2" class="table-responsive">
                 {{ table_data2 | safe }}
                 <!-- Menampilkan tabel yang dihasilkan oleh pandas -->
@@ -201,9 +126,9 @@
 
   <div id="result-section" style="display: none">
     <div class="container-fluid py-1">
-      <h2 style="color: white">Hasil Training</h2>
       <div class="card" id="hasil">
         <div class="card-header pb-0 pt-1">
+          <h2>Hasil Training</h2>
           <h2>Data 1 Tangan</h2>
           <div class="row mt-4">
             <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
@@ -696,55 +621,17 @@
   <!-- Sebelum akhir tag </body> -->
   <script>
     $(document).ready(function () {
-      var csv1Selected = false;
-      var csv2Selected = false;
-      $("#csv_input1").change(function () {
-        var formData = new FormData();
-        formData.append("csv_file1", $(this)[0].files[0]);
+      $("#start-training-btn").hide(); // Hide the button by default
 
-        $.ajax({
-          url: "/csv_upload",
-          type: "POST",
-          data: formData,
-          contentType: false,
-          processData: false,
-          success: function (response) {
-            $("#csv-table1").html(response.table_data1);
-            $("#csv-card").show(); // Tampilkan card CSV setelah file dipilih
-            csv1Selected = true;
-            checkStartTrainingVisibility();
-          },
-        });
-      });
-
-      $("#csv_input2").change(function () {
-        var formData = new FormData();
-        formData.append("csv_file2", $(this)[0].files[0]);
-
-        $.ajax({
-          url: "/csv_upload",
-          type: "POST",
-          data: formData,
-          contentType: false,
-          processData: false,
-          success: function (response) {
-            $("#csv-table2").html(response.table_data2);
-            $("#csv-card2").show(); // Tampilkan card CSV setelah file dipilih
-            csv2Selected = true;
-            checkStartTrainingVisibility();
-          },
-        });
-      });
-
-      function checkStartTrainingVisibility() {
-        if (csv1Selected && csv2Selected) {
-          $("#start-training-btn").show();
-        } else {
-          $("#start-training-btn").hide();
-        }
+      // Check if both tables are not empty
+      if (
+        $("#csv-table1 table").length > 0 &&
+        $("#csv-table2 table").length > 0
+      ) {
+        // If both tables are not empty, show the button
+        $("#start-training-btn").show();
       }
     });
-
     function showExportProcessingMessage(message) {
       var exportProcessingMessage = document.getElementById(
         "exportProcessingMessage"
@@ -762,82 +649,89 @@
       exportProcessingMessage.style.display = "none";
     }
 
-    $(document).ready(function () {
-      $("#start-training-btn").click(function () {
-        document.getElementById("exportProcessingMessage").style.display =
-          "block";
-        $.ajax({
-          url: "/start_training",
-          type: "POST",
-          success: function (response) {
-            $("#pertama").hide();
-            $("#csv-card").hide();
-            $("#csv-card2").hide();
-            $("#start-training-btn").hide();
-            document.getElementById("exportProcessingMessage").style.display =
-              "none";
-            // Tampilkan pesan bahwa pelatihan selesai
-            Swal.fire({
-              icon: "success",
-              title: "Training Sukses",
-              text: response.message,
-            });
+    $("#start-training-btn").click(function () {
+      document.getElementById("exportProcessingMessage").style.display =
+        "block";
+      $.ajax({
+        url: "/start_training",
+        type: "POST",
+        success: function (response) {
+          $("#pertama").hide();
+          $("#csv-card").hide();
+          $("#csv-card2").hide();
+          $("#start-training-btn").hide();
+          document.getElementById("exportProcessingMessage").style.display =
+            "none";
+          // Tampilkan pesan bahwa pelatihan selesai
+          Swal.fire({
+            icon: "success",
+            title: "Training Sukses",
+            text: response.message,
+          });
 
-            // Tampilkan hasil kalkulasi model
-            $("#TP_1").text(response.TP_1);
-            $("#TN_1").text(response.TN_1);
-            $("#FP_1").text(response.FP_1);
-            $("#FN_1").text(response.FN_1);
-            $("#akurasi_1").text(response.akurasi_1);
-            $("#precision_1").text(response.precision_1);
-            $("#recall_1").text(response.recall_1);
-            $("#f_1").text(response.f_1);
-            $("#TP_2").text(response.TP_2);
-            $("#TN_2").text(response.TN_2);
-            $("#FP_2").text(response.FP_2);
-            $("#FN_2").text(response.FN_2);
-            $("#akurasi_2").text(response.akurasi_2);
-            $("#precision_2").text(response.precision_2);
-            $("#recall_2").text(response.recall_2);
-            $("#f_2").text(response.f_2);
+          // Tampilkan hasil kalkulasi model
+          $("#TP_1").text(response.TP_1);
+          $("#TN_1").text(response.TN_1);
+          $("#FP_1").text(response.FP_1);
+          $("#FN_1").text(response.FN_1);
+          $("#akurasi_1").text(response.akurasi_1);
+          $("#precision_1").text(response.precision_1);
+          $("#recall_1").text(response.recall_1);
+          $("#f_1").text(response.f_1);
+          $("#TP_2").text(response.TP_2);
+          $("#TN_2").text(response.TN_2);
+          $("#FP_2").text(response.FP_2);
+          $("#FN_2").text(response.FN_2);
+          $("#akurasi_2").text(response.akurasi_2);
+          $("#precision_2").text(response.precision_2);
+          $("#recall_2").text(response.recall_2);
+          $("#f_2").text(response.f_2);
 
-            // Tampilkan gambar heatmap
-            $("#heatmap1").attr(
-              "src",
-              "data:image/png;base64," + response.heatmap1_data
-            );
-            $("#heatmap2").attr(
-              "src",
-              "data:image/png;base64," + response.heatmap2_data
-            );
-            $("#result-section").show();
-          },
-          error: function (xhr, status, error) {
-            // Tangani kesalahan jika terjadi
-            console.log("AJAX Error:", xhr.responseText);
-          },
-        });
+          // Tampilkan gambar heatmap
+          $("#heatmap1").attr(
+            "src",
+            "data:image/png;base64," + response.heatmap1_data
+          );
+          $("#heatmap2").attr(
+            "src",
+            "data:image/png;base64," + response.heatmap2_data
+          );
+          $("#result-section").show();
+        },
+        error: function (xhr, status, error) {
+          // Tangani kesalahan jika terjadi
+          console.log("AJAX Error:", xhr.responseText);
+        },
       });
     });
     // Fungsi untuk menampilkan Sweet Alert dengan gambar lebih besar
+
+    // Fungsi untuk menangani Sweet Alert dengan gambar besar
     function showLargeImage(imageSrc) {
+      // Sembunyikan sidenav
+      $("#sidenav-main").hide();
+
+      // Tampilkan Sweet Alert
       Swal.fire({
         imageUrl: imageSrc,
-        imageWidth: 900, // Ubah ukuran gambar sesuai kebutuhan
+        imageWidth: 900,
         imageAlt: "Large Image",
         showCloseButton: true,
         confirmButtonText: "Tutup",
         customClass: "sweet-alert-large-image",
+      }).then(() => {
+        // Tampilkan kembali sidenav setelah Sweet Alert ditutup
+        $("#sidenav-main").show();
       });
     }
 
-    // Event listener for button Model 1
+    // Event listener untuk tombol Model 1
     $("#btn-model1").on("click", function () {
       var heatmap1Src = $("#heatmap1").attr("src");
       showLargeImage(heatmap1Src);
     });
 
-    // Event listener for button Model 2
+    // Event listener untuk tombol Model 2
     $("#btn-model2").on("click", function () {
       var heatmap2Src = $("#heatmap2").attr("src");
       showLargeImage(heatmap2Src);

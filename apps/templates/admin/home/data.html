@@ -132,7 +132,6 @@ body, html {
 >
   <span class="mask bg-primary opacity-6"></span>
 </div>
-{% include "admin/includes/navigation-auth.html" %}
 
 <main class="main-content position-relative border-radius-lg">
   <div class="container-fluid py-7">
@@ -144,17 +143,19 @@ body, html {
           </div>
           
           <div class="card-header pb-0 pt-3">
-            <label for="table_name"><br><br>Nama Tabel:</label>
+            <label for="table_name"><br><br>Kategori:</label>
             <select id="table_name" name="table_name" class="form-select">
               <option value="data_1_tangan">Data 1 Tangan</option>
               <option value="data_2_tangan">Data 2 Tangan</option>
             </select>
-            <label for="huruf"><br>Pilih huruf:</label>
+            <!-- <label for="huruf"><br>Pilih huruf:</label>
             <select name="huruf" id="huruf" class="form-select">
               <option value="">Pilih huruf</option>
-            </select>
+            </select> -->
             <br>
-            <input type="text" class="form-control" name="new_huruf_input" id="new_huruf_input" placeholder="Masukkan huruf baru" style="display:none;">
+            <input type="text" class="form-control" name="new_huruf_input" id="new_huruf_input" placeholder="Masukkan huruf baru" oninput="validateInput(this)" maxlength="1">
+            <p id="error-message" style="color: red; display: none;">hanya bisa berupa huruf (A-Z, a-z)</p>
+
             <br>
             <label for="uploaded_files" class="form-label">Pilih foto (jpg/jpeg/png):</label>
             <div id="butt"><input type="file" class="form-control-file" name="uploaded_files" accept=".jpg, .jpeg, .png" multiple></div>
@@ -183,70 +184,86 @@ body, html {
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-  function loadHurufOptions() {
-      var table_name = document.getElementById("table_name").value;
-      var hurufSelect = document.getElementById("huruf");
-      var newHurufInput = document.getElementById("new_huruf_input");
-
-
-      hurufSelect.innerHTML = ""; // Clear options before loading new ones
-
-      var xhr = new XMLHttpRequest();
-      xhr.open("GET", "/get_huruf_options?table_name=" + table_name, true);
-
-      xhr.onreadystatechange = function() {
-          if (xhr.readyState === 4 && xhr.status === 200) {
-              var hurufOptions = JSON.parse(xhr.responseText);
-              if (hurufOptions.length === 0) {
-          // If no options available, show the new_huruf_input field
-          newHurufInput.style.display = "block";
-          hurufSelect.style.display = "none";
-        } else {
-          // If options are available, populate the hurufSelect dropdown
-          newHurufInput.style.display = "none";
-          hurufSelect.style.display = "block";}
-              for (var i = 0; i < hurufOptions.length; i++) {
-                  var option = document.createElement("option");
-                  option.value = hurufOptions[i];
-                  option.text = hurufOptions[i];
-                  hurufSelect.appendChild(option);
-              }
-
-              // Add "Tambah huruf baru" option
-              var tambahOption = document.createElement("option");
-              tambahOption.value = "Tambah huruf baru";
-              tambahOption.text = "Tambah huruf baru";
-              hurufSelect.appendChild(tambahOption);
-          }
-      };
-
-      xhr.send();
-      // Check if there are any options available
-  }
-
-
-  // Call the function immediately after defining it
-  loadHurufOptions();
-
-  // Attach the function to the change event of the table dropdown
-  document.getElementById("table_name").addEventListener("change", loadHurufOptions);
+  function validateInput(inputField) {
+      var inputValue = inputField.value;
+      var validInput = inputValue.replace(/[^a-zA-Z]/g, ''); // Remove any characters that are not alphabetic
   
-  // Show input for new huruf when "Tambah huruf baru" is selected
-  document.getElementById("huruf").addEventListener("change", function() {
-      var selectedHuruf = document.getElementById("huruf").value;
-      var newHurufInput = document.getElementById("new_huruf_input");
-      if (selectedHuruf === "Tambah huruf baru") {
-          newHurufInput.style.display = "block";
+      if (inputValue !== validInput) {
+          inputField.value = validInput;
+          document.getElementById('error-message').style.display = 'block';
       } else {
-          newHurufInput.style.display = "none";
+          document.getElementById('error-message').style.display = 'none';
       }
-  });
+  }
+  </script>
+    
+  
+<script>
+  // function loadHurufOptions() {
+  //     var table_name = document.getElementById("table_name").value;
+  //     var hurufSelect = document.getElementById("huruf");
+  //     var newHurufInput = document.getElementById("new_huruf_input");
+
+
+  //     hurufSelect.innerHTML = ""; // Clear options before loading new ones
+
+  //     var xhr = new XMLHttpRequest();
+  //     xhr.open("GET", "/get_huruf_options?table_name=" + table_name, true);
+
+  //     xhr.onreadystatechange = function() {
+  //         if (xhr.readyState === 4 && xhr.status === 200) {
+  //             var hurufOptions = JSON.parse(xhr.responseText);
+  //             if (hurufOptions.length === 0) {
+  //         // If no options available, show the new_huruf_input field
+  //         newHurufInput.style.display = "block";
+  //         hurufSelect.style.display = "none";
+  //       } else {
+  //         // If options are available, populate the hurufSelect dropdown
+  //         newHurufInput.style.display = "none";
+  //         hurufSelect.style.display = "block";}
+  //             for (var i = 0; i < hurufOptions.length; i++) {
+  //                 var option = document.createElement("option");
+  //                 option.value = hurufOptions[i];
+  //                 option.text = hurufOptions[i];
+  //                 hurufSelect.appendChild(option);
+  //             }
+
+  //             // Add "Tambah huruf baru" option
+  //             var tambahOption = document.createElement("option");
+  //             tambahOption.value = "Tambah huruf baru";
+  //             tambahOption.text = "Tambah huruf baru";
+  //             hurufSelect.appendChild(tambahOption);
+  //         }
+  //     };
+
+  //     xhr.send();
+  //     // Check if there are any options available
+  // }
+
+
+  // // Call the function immediately after defining it
+  // loadHurufOptions();
+
+  // // Attach the function to the change event of the table dropdown
+  // document.getElementById("table_name").addEventListener("change", loadHurufOptions);
+  
+  // // Show input for new huruf when "Tambah huruf baru" is selected
+  // document.getElementById("huruf").addEventListener("change", function() {
+  //     var selectedHuruf = document.getElementById("huruf").value;
+  //     var newHurufInput = document.getElementById("new_huruf_input");
+  //     if (selectedHuruf === "Tambah huruf baru") {
+  //         newHurufInput.style.display = "block";
+  //     } else {
+  //         newHurufInput.style.display = "none";
+  //     }
+  // });
 
   document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("save-button").addEventListener("click", function() {
     var table_name = document.getElementById("table_name").value;
-    var huruf = document.getElementById("huruf").value;
+    // var huruf = document.getElementById("huruf").value;
     var new_huruf_input = document.getElementById("new_huruf_input");
     var new_value = new_huruf_input.value.toUpperCase();
     var uploadedFiles = document.querySelector("input[type=file]").files;
@@ -278,19 +295,19 @@ if (new_value.trim() === "") {
   return;
 }
 
-if (!/^[a-zA-Z]+$/.test(new_value)) {
-  Swal.fire({
-    icon: 'error',
-    title: 'Error',
-    text: 'Huruf baru hanya boleh berisi huruf alfabet.'
-  });
-  return;
-}
+// if (!/^[a-zA-Z]+$/.test(new_value)) {
+//   Swal.fire({
+//     icon: 'error',
+//     title: 'Error',
+//     text: 'Huruf baru hanya boleh berisi huruf alfabet.'
+//   });
+//   return;
+// }
 
 
     var formData = new FormData();
     formData.append("table_name", table_name);
-    formData.append("huruf", huruf);
+    // formData.append("huruf", huruf);
     formData.append("new_value", new_value);
     for (var i = 0; i < uploadedFiles.length; i++) {
       formData.append("uploaded_files", uploadedFiles[i]);

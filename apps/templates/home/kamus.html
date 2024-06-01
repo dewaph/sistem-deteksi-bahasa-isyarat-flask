@@ -79,10 +79,10 @@
       <div class="col-12">
         <div class="card mb-4 text-center">
           <!-- Apply text-center class to center-align card contents -->
-          <h1 class="mb-4">Belajar Huruf Alfabet Isyarat</h1>
+          <h1 class="mb-4">Kamus Huruf Alfabet BISINDO</h1>
           <!-- Add margin-bottom for spacing -->
           {% if not combined_video_path %}
-          <form method="post" id="inputForm">
+          <!-- <form method="post" id="inputForm">
             <div class="searchbox-wrap"></div>
             <input
               type="text"
@@ -97,7 +97,7 @@
               </div>
               Sedang proses...
             </div>
-          </form>
+          </form> -->
           <script>
             document
               .getElementById("inputForm")
@@ -188,6 +188,7 @@
                       src="{{ url_for('static', filename='kamusku/' + image) }}"
                       alt="{{ letter_data.letter }}"
                       width="150"
+                      class="mb-5"
                     />
                   </div>
                 </div>
@@ -213,7 +214,6 @@
       </div>
     </div>
   </div>
-  {% include "includes/footer.html" %}
 </main>
 
 {% endblock content %}
@@ -222,10 +222,8 @@
 {% block javascripts %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  // Get all elements with the class 'image-number'
   const imageNumberElements = document.querySelectorAll(".image-number");
 
-  // Loop through each element and set the image numbering
   imageNumberElements.forEach((element, index) => {
     element.textContent = index + 1;
   });

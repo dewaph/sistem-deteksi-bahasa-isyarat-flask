@@ -36,28 +36,28 @@
       </li>
       <li class="nav-item">
         <a
-        class="nav-link {% if 'kamus' in request.path %} active {% endif %}"
-        href="{{ url_for('home_blueprint.kamus') }}"
+        class="nav-link {% if 'belajar' in request.path %} active {% endif %}"
+        href="{{ url_for('home_blueprint.belajar') }}"
         >
-          <div
-            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center"
-          >
-            <i class="ni ni-books text-primary text-sm opacity-10"></i>
-          </div>
-          <span class="nav-link-text ms-1">Kamus</span>
+        <div
+        class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center"
+      >
+        <i class="ni ni-books text-primary text-sm opacity-10"></i>
+      </div>
+      <span class="nav-link-text ms-1">Belajar</span>
         </a>
       </li>
       <li class="nav-item">
         <a
-        class="nav-link {% if 'terjemahan' in request.path %} active {% endif %}"
-        href="{{ url_for('home_blueprint.terjemahan') }}"
+        class="nav-link {% if 'transkrip' in request.path %} active {% endif %}"
+        href="{{ url_for('home_blueprint.transkrip') }}"
         >
-          <div
-            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center"
-          >
-            <i class="fas fa-language text-success text-sm opacity-10"></i>
-          </div>
-          <span class="nav-link-text ms-1">Terjemahan</span>
+        <div
+        class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center"
+      >
+        <i class="ni ni-caps-small text-dark text-sm opacity-10"></i>
+      </div>
+      <span class="nav-link-text ms-1">Transkrip</span>
         </a>
       </li>
       <li class="nav-item">
@@ -76,3 +76,7 @@
       
   </div>
 </aside>
+
+
+
+

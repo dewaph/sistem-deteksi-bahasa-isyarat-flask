@@ -1,0 +1,197 @@
+{% extends 'layouts/base.html' %} {% block title %} Terjemahan {% endblock title
+%}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<style>
+  .btn.active-btn {
+    background-color: #28a745; /* Change this to the desired color for active buttons */
+    color: #fff; /* Change this to the desired text color for active buttons */
+  }
+</style>
+
+{% endblock stylesheets %} {% block content %}
+
+<div
+  class="position-absolute w-100 min-height-300 top-0"
+  style="background-image: url('{{ config.ASSETS_ROOT }}/img/profile-layout-header.jpg'); background-position-y: 50%;"
+>
+  <span class="mask bg-primary opacity-6"></span>
+</div>
+
+{% include "includes/sidenav.html" %}
+
+<main class="main-content position-relative border-radius-lg">
+  {% include "includes/navigation.html" %}
+  <div class="container-fluid py-4 align-items-center flex-column">
+    <!-- Apply d-flex, justify-content-center, align-items-center, and flex-column classes -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4 text-center">
+          <h1>Deteksi Bahasa Isyarat Tangan BISINDO</h1>
+          <div
+            id="videoContainer"
+            class="d-flex justify-content-center align-items-start"
+          >
+            <img
+              id="videoStream"
+              src=""
+              width="60%"
+              style="
+                display: none;
+
+                outline: 2px solid #5e72e4;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+              "
+            />
+            <div class="image-container" style="width: 35%">
+              <img
+                width="70%"
+                id="letterImage"
+                src=""
+                alt="{{ letter }}"
+                style="
+                  align-self: flex-start;
+                  outline: 1px solid #5e72e4;
+                  border-radius: 8px;
+                  box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+                  margin-bottom: 20px;
+                "
+              />
+              {% for letter in huruf %}
+              <div
+                id="{{ letter }}Content"
+                class="file-content"
+                style="
+                  display: none;
+                  text-align: left;
+                  margin-left: 50px;
+                  margin-right: 50px;
+                "
+              >
+                <p>{{ kunci.get(letter, 'File not found') }}</p>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <br />
+
+          <div class="transcript">
+            {% for letter in huruf %}
+
+            <button
+              class="btn btn-secondary"
+              onclick="updateQuiz(this, '{{ letter }}')"
+            >
+              {{ letter }}
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Retrieve the active button index from localStorage
+    var activeIndex = localStorage.getItem("activeBtnIndex");
+    var selectedLetter = localStorage.getItem("selectedLetter");
+    if (activeIndex !== null && selectedLetter !== null) {
+      // Set the active class to the corresponding button
+      document.querySelectorAll(".btn").forEach(function (btn, index) {
+        if (index == activeIndex) {
+          btn.classList.add("active-btn");
+          updateImage(selectedLetter); // Call the function to update the image
+          updateKunci(selectedLetter);
+        }
+      });
+    }
+  });
+
+  function updateQuiz(button, letter) {
+    // Make an AJAX request to update the quiz index
+    fetch(`/update_quiz/${letter}`)
+      .then((response) => response.text())
+      .then((data) => {
+        // If the index is updated, store the active button index and toggle the active class
+        if (data === "Quiz index updated") {
+          document
+            .querySelectorAll(".btn")
+            .forEach((btn) => btn.classList.remove("active-btn"));
+          button.classList.add("active-btn");
+          updateImage(letter);
+          updateKunci(letter);
+          location.reload();
+
+          // Store the active button index in localStorage
+          var activeIndex = Array.from(button.parentNode.children).indexOf(
+            button
+          );
+          localStorage.setItem("activeBtnIndex", activeIndex.toString());
+          localStorage.setItem("selectedLetter", letter);
+        }
+      })
+      .catch((error) => {
+        console.error("Error updating quiz index:", error);
+      });
+  }
+
+  function updateKunci(letter) {
+    document.querySelectorAll(".file-content").forEach(function (contentDiv) {
+      contentDiv.style.display = "none";
+    });
+
+    var contentDiv = document.getElementById(letter + "Content");
+    if (contentDiv) {
+      contentDiv.style.display = "block";
+    }
+  }
+
+  function updateImage(letter) {
+    // Update the src attribute of the image with the new letter
+    var imageElement = document.getElementById("letterImage");
+    imageElement.src =
+      "{{ url_for('static', filename='kamusku/') }}" + letter + ".png";
+  }
+</script>
+
+<script>
+  // Function to toggle the camera on
+  function toggleCameraOn() {
+    cameraActive = true;
+    videoElement.style.display = "block";
+    videoElement.src = "{{ url_for('home_blueprint.video_feed') }}"; // Set the src attribute
+    labelElement.innerText = "Kamera Menyala";
+  }
+  window.addEventListener("load", function () {
+    if (!cameraActive) {
+      toggleCameraOn();
+    }
+  });
+  var videoElement = document.getElementById("videoStream");
+  var cameraActive = false;
+
+  toggleSwitch.addEventListener("change", function () {
+    cameraActive = !cameraActive;
+
+    if (cameraActive) {
+      videoElement.style.display = "block";
+      videoElement.src = "{{ url_for('admin_blueprint.video') }}"; // Set the src attribute
+      labelElement.innerText = "Kamera Menyala";
+    } else {
+      videoElement.style.display = "none";
+      videoElement.src = "{{ url_for('admin_blueprint.tutup') }}"; // Reset the src attribute
+      labelElement.innerText = "Kamera Mati";
+    }
+  });
+</script>
+
+{% endblock javascripts %}
