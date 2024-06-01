@@ -8,12 +8,11 @@ def get_db_connection():
         database="sistem_deteksi_isyarat"
     )
 
-def count_data_in_table(table_name):
-    # Fungsi ini akan menghitung jumlah data di dalam suatu tabel di database
-    connection = get_db_connection()
+def count_data_in_table(category_id):
+    connection = get_db_connection()  
     cursor = connection.cursor()
 
-    query = f"SELECT COUNT(*) FROM {table_name}"
+    query = f"SELECT COUNT(*) FROM dataset WHERE kategori_id = {category_id}"
     cursor.execute(query)
     result = cursor.fetchone()[0]
 
@@ -21,17 +20,24 @@ def count_data_in_table(table_name):
 
     return result
 
-def count_unique_labels(table_name):
-    connection = get_db_connection()
+def count_unique_labels(category_id):
+    connection = get_db_connection()  
     cursor = connection.cursor()
 
-    query = f"SELECT class_label, huruf, COUNT(*) AS count FROM {table_name} GROUP BY class_label"
+    query = f"""
+    SELECT d.huruf, COUNT(*), k.kategori
+    FROM dataset d
+    JOIN kategori k ON d.kategori_id = k.id
+    WHERE d.kategori_id = {category_id}
+    GROUP BY d.class_label
+    """
     cursor.execute(query)
     result = cursor.fetchall()
 
     connection.close()
 
     return result
+
 
 def is_huruf_exists_in_tables(huruf):
     connection = get_db_connection()

@@ -1,9 +1,93 @@
-{% extends 'layouts/base.html' %} {% block title %} Preprocessing {% endblock
+{% extends 'layouts/base.html' %} {% block title %} Buat Landmark {% endblock
 title %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}
-<style></style>
+<style>
+  .hidden-image {
+    display: none;
+  }
+  .btnEnlarge {
+    padding: 10px 20px;
+    background-color: #5e72e4;
+    color: #fff;
+    border: 1px solid #5e72e4;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .btnEnlarge:hover {
+    background-color: #2980b9;
+    color: #fff;
+  }
+  .image-container:hover {
+    transform: scale(1.1);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .pagination .page-item {
+    margin-right: -3px;
+  }
+
+  .pagination .page-link {
+    border: 1px solid #5e72e4;
+    color: #5e72e4;
+    background-color: #fff;
+    border-radius: 0 !important;
+  }
+
+  .pagination .page-item.active .page-link {
+    background-color: #5e72e4;
+    color: #fff;
+    border: 1px solid #5e72e4;
+  }
+
+  .pagination .page-link:hover {
+    background-color: #5e72e4;
+    color: #fff;
+    border: 1px solid #5e72e4;
+  }
+
+  #previewCard1 {
+    border-radius: 0;
+  }
+
+  #previewCard2 {
+    display: none;
+    border-radius: 0;
+  }
+
+  #myTabs {
+    border-bottom: none; /* Remove default Bootstrap border */
+    border-radius: 10px 10px 0 0; /* Curved border for tabs */
+  }
+
+  #myTabs .nav-item {
+    margin-bottom: 0;
+  }
+
+  #myTabs .nav-link {
+    color: #344767;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 10px 10px 0 0;
+  }
+
+  #myTabs .nav-link.active {
+    color: #fff; /* White color for active tab text */
+    background-color: #fb6340; /* Purple background for active tab */
+    border: 1px solid #fb6340; /* Purple border for active tab */
+  }
+
+  #myTabs .nav-link:hover {
+    color: #fff; /* White color for tab text on hover */
+    background-color: #fb6340; /* Purple background on hover */
+    border: 1px solid #fb6340; /* Purple border on hover */
+  }
+</style>
 {% endblock stylesheets %} {% block content %}
 
 <div class="min-height-300 bg-primary position-absolute w-100"></div>
@@ -19,8 +103,11 @@ title %}
         <div class="card mb-4">
           <div class="card-body px-0 pt-0 pb-2">
             <div class="card-header pb-0 pt-3">
-              <h2>Preprocessing Data</h2>
-              <p>Klik tombol di bawah untuk memulai preprocessing gambar</p>
+              <h2>Buat Landmark Tangan</h2>
+              <p>
+                Klik tombol di bawah untuk memulai membuat landmark pada gambar
+                tangan
+              </p>
               <form action="/preprocess" method="post">
                 <button
                   type="submit"
@@ -28,7 +115,7 @@ title %}
                   id="processButton"
                   class="btn btn-primary"
                 >
-                  Mulai Preprocess Data
+                  Buat Landmark
                 </button>
                 <div id="processingMessage" style="display: none">
                   <div class="spinner-border spinner-border-sm" role="status">
@@ -40,103 +127,225 @@ title %}
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="row">
-      <div class="col-12">
-        <div class="card mb-4">
-          <div class="card-header pb-0">
-            <h6>Preview</h6>
-          </div>
-          <div class="card-header pb-0 pt-3">
-            <div cclass="card-header pb-0 pt-3">
-              <div class="flex-container">
-                {% if dataset_1_images %}
-                <h2>Processed Images - Data 1 tangan</h2>
-                {% for class_label, images in dataset_1_images %} {% set huruf =
-                label_dataset_1[class_label] %}
-                <h3>Kelas: {{ huruf }}</h3>
-                <!-- Menggunakan huruf dari label_dataset_1 -->
-                <div>
-                  {% for img in images %}
-                  <div style="display: inline-block; margin: 10px">
-                    <img
-                      src="data:image/jpeg;base64,{{ img }}"
-                      alt="{{ huruf }} Image"
+        {% if show_card %}
+        <ul class="nav nav-tabs" id="myTabs" role="tablist">
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              id="card1-tab"
+              data-toggle="tab"
+              href="#card1"
+              role="tab"
+              aria-controls="card1"
+              aria-selected="true"
+              >Data 1 Tangan</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              id="card2-tab"
+              data-toggle="tab"
+              href="#card2"
+              role="tab"
+              aria-controls="card2"
+              aria-selected="true"
+              >Data 2 Tangan</a
+            >
+          </li>
+        </ul>
+        {% endif %}
+
+        <div class="tab-content">
+          <!-- Card 1 -->
+          <div
+            class="tab-pane fade show active"
+            role="tabpanel"
+            aria-labelledby="card1-tab"
+          >
+            {% if show_card %}
+            <div class="row">
+              <div class="col-12">
+                <div class="card mb-4" id="previewCard1">
+                  <div class="card-header pb-0">
+                    <h6>Preview</h6>
+                  </div>
+                  <div class="card-header pb-0 pt-3">
+                    <div cclass="card-header pb-0 pt-3">
+                      <div class="flex-container">
+                        {% if dataset_1_images %}
+                        <h2>Data 1 tangan</h2>
+                        {% for class_images in dataset_1_images %} {% if
+                        class_images %} {% set huruf =
+                        label_dataset_1[class_images[0].class_label] %}
+                        <h3>Huruf: {{ huruf }}</h3>
+                        <!-- Menggunakan huruf dari label_dataset_1 -->
+                        {% for image_record in class_images %}
+                        <div
+                          style="display: inline-block; margin: 10px"
+                          class="image-container"
+                        >
+                          <a
+                            href="data:image/jpeg;base64,{{ image_record.image_data }}"
+                            data-lightbox="{{ huruf }}"
+                            data-title="Gambar {{ huruf }}"
+                          >
+                            <!-- <img
+                              src="data:image/jpeg;base64,{{ image_record.image_data }}"
+                              alt="{{ huruf }} Image"
+                              width="240"
+                              height="240"
+                            /> -->
+                            <img
+                              src="data:image/jpeg;base64,{{ image_record.image_data }}"
+                              alt="{{ huruf }} Image"
+                              width="240"
+                              height="240"
+                              class="{% if loop.index > 3 %}hidden-image{% endif %}"
+                            />
+                          </a>
+                        </div>
+                        {% endfor %} {% endif %} {% endfor %} {% endif %}
+                        <form method="post" action="/export-csv">
+                          <button
+                            type="button"
+                            onclick="handleExportCSV('onehand')"
+                            class="btn btn-dark"
+                          >
+                            Buat CSV Landmark
+                          </button>
+                        </form>
+                        <div id="exportProcessingMessage" style="display: none">
+                          <div
+                            class="spinner-grow spinner-grow-sm"
+                            role="status"
+                          >
+                            <span class="sr-only">Loading...</span>
+                          </div>
+                          Membuat CSV Landmark 1 tangan...
+                        </div>
+                      </div>
+                    </div>
+                    <nav aria-label="Page navigation example">
+                      <ul class="pagination">
+                        {% for num in range(1, total_pages_dataset_1 + 1) %}
+                        <li
+                          class="page-item {% if num == current_page_dataset_1 %}active{% endif %}"
+                        >
+                          <a
+                            class="page-link"
+                            href="preprocessing?page_dataset_1={{ num }}&page_dataset_2={{ current_page_dataset_2 }}#card1"
+                            >{{ num }}</a
+                          >
+                        </li>
+                        {% endfor %}
+                      </ul>
+                    </nav>
+                    <input
+                      type="hidden"
+                      id="current_page_dataset_1"
+                      value="{{ current_page_dataset_1 }}"
                     />
                   </div>
-                  {% endfor %}
                 </div>
-                {% endfor %} {% endif %} {% if show_csv_button %}
+              </div>
+            </div>
+            {% endif %}
+          </div>
 
-                <form method="post" action="/export-csv">
-                  <button
-                    id="downloadButton"
-                    type="button"
-                    class="btn btn-outline-primary"
-                  >
-                    Export CSV 1 tangan
-                  </button>
-                </form>
-                <div id="exportProcessingMessage" style="display: none">
-                  <div class="spinner-grow spinner-grow-sm" role="status">
-                    <span class="sr-only">Loading...</span>
+          <div
+            class="tab-pane fade show active"
+            role="tabpanel"
+            aria-labelledby="card2-tab"
+          ></div>
+          {% if show_card2 %}
+          <div class="row">
+            <div class="col-12">
+              <div class="card mb-4" id="previewCard2">
+                <div class="card-header pb-0">
+                  <h6>Preview</h6>
+                </div>
+                <div class="card-header pb-0 pt-3">
+                  <div cclass="card-header pb-0 pt-3">
+                    {% if dataset_2_images %}
+                    <h2>Data 2 tangan</h2>
+                    {% for class_images in dataset_2_images %} {% if
+                    class_images %} {% set huruf =
+                    label_dataset_2[class_images[0].class_label] %}
+                    <h3>Huruf: {{ huruf }}</h3>
+                    <!-- Menggunakan huruf dari label_dataset_1 -->
+                    {% for image_record in class_images %}
+
+                    <div
+                      style="display: inline-block; margin: 10px"
+                      class="image-container"
+                    >
+                      <a
+                        href="data:image/jpeg;base64,{{ image_record.image_data }}"
+                        data-lightbox="{{ huruf }}"
+                        data-title="Gambar {{ huruf }}"
+                      >
+                        <!-- <img
+                          src="data:image/jpeg;base64,{{ image_record.image_data }}"
+                          alt="{{ huruf }} Image"
+                          width="240"
+                          height="240"
+                        /> -->
+                        <img
+                          src="data:image/jpeg;base64,{{ image_record.image_data }}"
+                          alt="{{ huruf }} Image"
+                          width="240"
+                          height="240"
+                          class="{% if loop.index > 3 %}hidden-image{% endif %}"
+                        />
+                      </a>
+                    </div>
+                    {% endfor %} {% endif %}{% endfor %} {% endif %}
+                    <form method="post" action="/export-csv">
+                      <button
+                        type="button"
+                        onclick="handleExportCSV('twohand')"
+                        class="btn btn-dark"
+                      >
+                        Buat CSV Landmark
+                      </button>
+                    </form>
+                    <div id="exportProcessingMessage2" style="display: none">
+                      <div class="spinner-grow spinner-grow-sm" role="status">
+                        <span class="sr-only">Loading...</span>
+                      </div>
+                      Membuat CSV Landmark 2 tangan...
+                    </div>
                   </div>
-                  Exporting CSV 1 tangan...
-                </div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-12">
-        <div class="card mb-4">
-          <div class="card-header pb-0">
-            <h6>Preview</h6>
-          </div>
-          <div class="card-header pb-0 pt-3">
-            <div cclass="card-header pb-0 pt-3">
-              {% if dataset_2_images %}
-              <h2>Processed Images - Data 2 tangan</h2>
-              {% for class_label, images in dataset_2_images %} {% set huruf =
-              label_dataset_2[class_label] %}
-              <h3>Kelas: {{ huruf }}</h3>
-              <div>
-                {% for img in images %}
-                <div style="display: inline-block; margin: 10px">
-                  <img
-                    src="data:image/jpeg;base64,{{ img }}"
-                    alt="{{ huruf }} Image"
+                  <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                      {% for num in range(1, total_pages_dataset_2 + 1) %}
+                      <li
+                        class="page-item {% if num == current_page_dataset_2 %}active{% endif %}"
+                      >
+                        <a
+                          class="page-link"
+                          href="preprocessing?page_dataset_1={{ current_page_dataset_1 }}&page_dataset_2={{ num }}#card2"
+                          >{{ num }}</a
+                        >
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </nav>
+                  <input
+                    type="hidden"
+                    id="current_page_dataset_2"
+                    value="{{ current_page_dataset_2 }}"
                   />
+                  <br />
                 </div>
-                {% endfor %}
               </div>
-              {% endfor %} {% endif %} {% if show_csv_button %}
-              <form method="post" action="/export-csv">
-                <button
-                  id="downloadButton2"
-                  type="button"
-                  class="btn btn-outline-primary"
-                >
-                  Export CSV 2 tangan
-                </button>
-              </form>
-              <div id="exportProcessingMessage2" style="display: none">
-                <div class="spinner-grow spinner-grow-sm" role="status">
-                  <span class="sr-only">Loading...</span>
-                </div>
-                Exporting CSV 2 tangan...
-              </div>
-              {% endif %}
             </div>
           </div>
         </div>
       </div>
+      {% endif %}
     </div>
   </div>
 </main>
@@ -145,6 +354,18 @@ title %}
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
+<!-- Lightbox CSS -->
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.1/css/lightbox.min.css"
+/>
+
+<!-- jQuery (diperlukan oleh Lightbox) -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<!-- Lightbox JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.1/js/lightbox.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   document
@@ -155,8 +376,16 @@ title %}
 
   // Function to handle CSV export button click
   function handleExportCSV(csvType) {
-    document.getElementById("exportProcessingMessage").style.display = "block";
-    document.getElementById("exportProcessingMessage2").style.display = "block";
+    if (csvType === "onehand") {
+      document.getElementById("exportProcessingMessage").style.display =
+        "block";
+      document.getElementById("exportProcessingMessage2").style.display =
+        "none";
+    } else if (csvType === "twohand") {
+      document.getElementById("exportProcessingMessage").style.display = "none";
+      document.getElementById("exportProcessingMessage2").style.display =
+        "block";
+    }
 
     // Send AJAX request
     var xhr = new XMLHttpRequest();
@@ -196,59 +425,164 @@ title %}
     };
     xhr.send("csv=" + encodeURIComponent(csvType));
   }
-  document
-    .getElementById("downloadButton")
-    .addEventListener("click", function () {
-      document.getElementById("exportProcessingMessage").style.display =
-        "block";
-      // Send an AJAX request to the Flask endpoint for CSV download
-      var xhr = new XMLHttpRequest();
-      xhr.open("GET", "/download_csv1", true);
-      xhr.responseType = "blob";
-
-      xhr.onload = function () {
-        document.getElementById("exportProcessingMessage").style.display =
-          "none";
-        if (xhr.status === 200) {
-          // Create a download link and trigger the download
-          var blob = xhr.response;
-          var link = document.createElement("a");
-          link.href = window.URL.createObjectURL(blob);
-          link.download = "data1tangan.csv";
-          link.click();
-        } else {
-          console.error("Error downloading CSV");
-        }
-      };
-
-      xhr.send();
-    });
-  document
-    .getElementById("downloadButton2")
-    .addEventListener("click", function () {
-      document.getElementById("exportProcessingMessage2").style.display =
-        "block";
-      // Send an AJAX request to the Flask endpoint for CSV download
-      var xhr = new XMLHttpRequest();
-      xhr.open("GET", "/download_csv2", true);
-      xhr.responseType = "blob";
-
-      xhr.onload = function () {
-        document.getElementById("exportProcessingMessage2").style.display =
-          "none";
-        if (xhr.status === 200) {
-          // Create a download link and trigger the download
-          var blob = xhr.response;
-          var link = document.createElement("a");
-          link.href = window.URL.createObjectURL(blob);
-          link.download = "data2tangan.csv";
-          link.click();
-        } else {
-          console.error("Error downloading CSV");
-        }
-      };
-
-      xhr.send();
-    });
 </script>
+
+<script>
+  // Aktifkan Lightbox
+  lightbox.option({
+    fitImagesInViewport: true,
+    disableScrolling: true,
+  });
+
+  // Tambahkan event listener untuk tombol "Perbesar"
+  document.addEventListener("DOMContentLoaded", function () {
+    var enlargeButtons = document.querySelectorAll(".btnEnlarge");
+    enlargeButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        var huruf = button.getAttribute("data-lightbox");
+        // Cari elemen gambar berdasarkan classLabel dan klik
+        document.querySelector(`a[data-lightbox="${huruf}"]`).click();
+      });
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var images = document.querySelectorAll(".image-container");
+    var hiddenImages = document.querySelectorAll(".hidden-image");
+
+    // Sembunyikan gambar setelah indeks ke-2 (indeks dimulai dari 0)
+    for (var i = 3; i < images.length; i++) {
+      images[i].classList.add("hidden-image");
+    }
+
+    // Tambahkan event listener untuk menunjukkan gambar yang disembunyikan saat Lightbox dibuka
+    lightbox.option({
+      resizeDuration: 200,
+      wrapAround: true,
+      onOpen: function (lightbox) {
+        hiddenImages.forEach(function (hiddenImage) {
+          hiddenImage.style.display = "inline-block";
+        });
+      },
+      onClose: function (lightbox) {
+        hiddenImages.forEach(function (hiddenImage) {
+          hiddenImage.style.display = "none";
+        });
+      },
+    });
+  });
+</script>
+
+<!-- JavaScript to handle tab switch -->
+<script>
+  $(document).ready(function () {
+    // Function to show/hide cards based on active tab
+    function showHideCards(activeTab) {
+      if (activeTab === "#card1") {
+        $("#previewCard1").show();
+        $("#previewCard2").hide();
+      } else if (activeTab === "#card2") {
+        $("#previewCard1").hide();
+        $("#previewCard2").show();
+      }
+    }
+
+    // Function to set active tab based on URL hash
+    function setActiveTabFromHash() {
+      var hash = window.location.hash;
+
+      // Set default active tab to #card1 if hash is not #card1 or #card2
+      if (hash !== "#card1" && hash !== "#card2") {
+        hash = "#card1";
+      }
+
+      // Show/hide cards based on active tab
+      showHideCards(hash);
+
+      // Update active tab based on URL hash
+      $('#myTabs a[href="' + hash + '"]').tab("show");
+    }
+
+    // Handle tab switch on click
+    $("#myTabs a").on("click", function (e) {
+      e.preventDefault();
+      var activeTab = $(this).attr("href");
+
+      // Show/hide cards based on active tab
+      showHideCards(activeTab);
+
+      // Update active tab based on click
+      $(this).tab("show");
+    });
+
+    // Set active tab on page load
+    setActiveTabFromHash();
+
+    // Update URL hash when tab is shown
+    $("#myTabs a").on("shown.bs.tab", function (e) {
+      window.location.hash = e.target.hash;
+    });
+
+    // Remove focus from active tab after page load
+    $("#myTabs a.active").blur();
+  });
+</script>
+
 {% endblock javascripts %}
+
+<!-- // document
+  //   .getElementById("downloadButton")
+  //   .addEventListener("click", function () {
+  //     document.getElementById("exportProcessingMessage").style.display =
+  //       "block";
+  //     // Send an AJAX request to the Flask endpoint for CSV download
+  //     var xhr = new XMLHttpRequest();
+  //     xhr.open("GET", "/download_csv1", true);
+  //     xhr.responseType = "blob";
+
+  //     xhr.onload = function () {
+  //       document.getElementById("exportProcessingMessage").style.display =
+  //         "none";
+  //       if (xhr.status === 200) {
+  //         // Create a download link and trigger the download
+  //         var blob = xhr.response;
+  //         var link = document.createElement("a");
+  //         link.href = window.URL.createObjectURL(blob);
+  //         link.download = "onehand.csv";
+  //         link.click();
+  //       } else {
+  //         console.error("Error downloading CSV");
+  //       }
+  //     };
+
+  //     xhr.send();
+  //   });
+  // document
+  //   .getElementById("downloadButton2")
+  //   .addEventListener("click", function () {
+  //     document.getElementById("exportProcessingMessage2").style.display =
+  //       "block";
+  //     // Send an AJAX request to the Flask endpoint for CSV download
+  //     var xhr = new XMLHttpRequest();
+  //     xhr.open("GET", "/download_csv2", true);
+  //     xhr.responseType = "blob";
+
+  //     xhr.onload = function () {
+  //       document.getElementById("exportProcessingMessage2").style.display =
+  //         "none";
+  //       if (xhr.status === 200) {
+  //         // Create a download link and trigger the download
+  //         var blob = xhr.response;
+  //         var link = document.createElement("a");
+  //         link.href = window.URL.createObjectURL(blob);
+  //         link.download = "twohand.csv";
+  //         link.click();
+  //       } else {
+  //         console.error("Error downloading CSV");
+  //       }
+  //     };
+
+  //     xhr.send();
+  //   }); -->

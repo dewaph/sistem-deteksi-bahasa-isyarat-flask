@@ -3,6 +3,7 @@ import csv
 import pickle
 import numpy as np
 import mysql.connector
+import os
 
 def get_db_connection():
     return mysql.connector.connect(
@@ -11,26 +12,6 @@ def get_db_connection():
         password="",
         database="sistem_deteksi_isyarat"
     )
-
-def save_model_to_database(model_name, model):
-    model_data = pickle.dumps({model_name: model})
-    
-    # Explicitly open a connection and cursor
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute("SELECT COUNT(*) FROM models WHERE model_name = %s", (model_name,))
-        count = cursor.fetchone()[0]
-        if count == 0:
-            cursor.execute("INSERT INTO models (model_name, model_data) VALUES (%s, %s)", (model_name, model_data))
-        else:
-            cursor.execute("UPDATE models SET model_data = %s WHERE model_name = %s", (model_data, model_name))
-        
-        conn.commit()
-    finally:
-        cursor.close()
-        conn.close()
 
 def calculate_metrics(conf_matrix):
     TP = np.sum(np.diag(conf_matrix))
@@ -59,3 +40,69 @@ def load_data_from_csv(file_path):
         x = df.drop('label', axis=1)
         y = df['label']
     return x, y
+
+def save_model(model_name, model):
+    model_dir = os.path.join("apps", "static", "model")
+    os.makedirs(model_dir, exist_ok=True)  # Create the directory if it doesn't exist
+    model_path = os.path.join(model_dir, f"{model_name}.p")
+    if os.path.exists(model_path):
+        print(f"sukses")
+    else:
+        with open(model_path, 'wb') as model_file:
+            pickle.dump(model, model_file)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def save_model_to_database(model_name, model):
+    model_data = pickle.dumps({model_name: model})
+    
+    # Explicitly open a connection and cursor
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("SELECT COUNT(*) FROM models WHERE model_name = %s", (model_name,))
+        count = cursor.fetchone()[0]
+        if count == 0:
+            cursor.execute("INSERT INTO models (model_name, model_data) VALUES (%s, %s)", (model_name, model_data))
+        else:
+            cursor.execute("UPDATE models SET model_data = %s WHERE model_name = %s", (model_data, model_name))
+        
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
